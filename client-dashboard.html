@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Klien - Brandors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e' },
+                        accent: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' }
+                    },
+                    boxShadow: { 'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.4)', 'glow': '0 0 15px rgba(14, 165, 233, 0.3)' }
+                }
+            }
+        }
+    </script>
+    <style>
+        html { background-color: #020617; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: transparent; color: #f8fafc; -webkit-font-smoothing: antialiased; }
+        
+        .tab-panel { display: none; animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .tab-panel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .glass-panel { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s ease; }
+        .glass-card:hover { border-color: rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.05); }
+
+        .moodboard-card { border: 2px solid transparent; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .moodboard-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -8px rgba(0,0,0,0.5); }
+        .moodboard-card.selected { border-color: #0ea5e9; background-color: rgba(14, 165, 233, 0.05); box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15); }
+        
+        .ref-item { border: 3px solid transparent; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; border-radius: 1rem; }
+        .ref-item img { transition: transform 0.5s ease; width: 100%; height: 100%; object-fit: cover; }
+        .ref-item:hover img { transform: scale(1.08); }
+        .ref-item.selected { border-color: #0ea5e9; }
+        .ref-item .check { position: absolute; top: 10px; right: 10px; background: #0ea5e9; color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 12px; opacity: 0; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); transform: scale(0.5); box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+        .ref-item.selected .check { opacity: 1; transform: scale(1); }
+
+        .loader { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #0ea5e9; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .sidebar-item { display: flex; align-items: center; padding: 0.75rem 1rem; color: #94a3b8; border-radius: 0.75rem; margin-bottom: 0.25rem; transition: all 0.2s ease; cursor: pointer; font-weight: 500; }
+        .sidebar-item:hover { background-color: rgba(255,255,255,0.05); color: #f8fafc; }
+        .sidebar-item.active { background-color: rgba(14, 165, 233, 0.15); color: #38bdf8; font-weight: 700; box-shadow: inset 3px 0 0 #0ea5e9; }
+        
+        .coin-badge-mini { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #0f172a; font-size: 9px; font-weight: 800; padding: 1px 7px; border-radius: 999px; }
+        input[type="text"], select, textarea { background-color: rgba(15, 23, 42, 0.6); color: white; border-color: rgba(255,255,255,0.1); transition: all 0.2s ease; }
+        input[type="text"]:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.3); border-color: #0ea5e9; outline: none; }
+        select option { background-color: #0f172a; color: white; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden relative">
+
+    <!-- GLOBAL BACKGROUND -->
+    <div class="fixed inset-0 z-[-1] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
+
+    <!-- Sidebar -->
+    <aside class="w-64 glass-panel border-r flex flex-col z-20 shadow-soft">
+        <div class="p-6 border-b border-white/5 flex items-center gap-2">
+            <div>
+                <div class="font-extrabold text-xl tracking-tight text-white leading-none">Brand<span class="text-brand-500">ors.</span></div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Portal UMKM</div>
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 space-y-1">
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 px-3 mt-2">Pekerjaan</div>
+            <div class="sidebar-item active" id="btn-cc-overview" onclick="showTab('overview')"><i class="fa-solid fa-chart-pie w-6 opacity-70"></i> Ringkasan</div>
+            <div class="sidebar-item" id="btn-cc-new-project" onclick="showTab('new-project')"><i class="fa-solid fa-wand-magic-sparkles w-6 opacity-70"></i> Mulai Proyek</div>
+            <div class="sidebar-item" id="btn-cc-projects" onclick="showTab('projects')"><i class="fa-solid fa-folder-closed w-6 opacity-70"></i> Semua Proyek <span class="ml-auto bg-slate-800 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-700">2</span></div>
+            <div class="sidebar-item" id="btn-cc-workspace" onclick="showTab('workspace')"><i class="fa-solid fa-comments w-6 opacity-70"></i> Ruang Kerja</div>
+            
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 px-3 mt-8">Komunitas & Belajar</div>
+            <div class="sidebar-item" onclick="window.location.href='academy.html'"><i class="fa-solid fa-graduation-cap w-6 opacity-70"></i> Academy <span class="ml-auto coin-badge-mini">+BC</span></div>
+            <div class="sidebar-item" onclick="window.location.href='open-studio.html'"><i class="fa-solid fa-comments w-6 opacity-70"></i> Open Studio</div>
+
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 px-3 mt-8">Akun</div>
+            <div class="sidebar-item"><i class="fa-solid fa-gear w-6 opacity-70"></i> Pengaturan</div>
+            <div class="sidebar-item"><i class="fa-solid fa-credit-card w-6 opacity-70"></i> Tagihan</div>
+        </div>
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center gap-3 p-3 mb-4 glass-card rounded-xl">
+                <div class="w-10 h-10 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold text-sm border border-brand-500/30">SR</div>
+                <div><div class="font-bold text-sm text-white leading-tight">Siti Rahayu</div><div class="text-[10px] text-slate-400 font-medium tracking-wider uppercase mt-0.5">UMKM Owner</div></div>
+            </div>
+            <button onclick="window.location.href='landing-page.html'" class="w-full text-left text-sm text-slate-400 font-semibold p-2.5 rounded-lg mb-2 hover:bg-white/5 hover:text-white transition flex items-center"><i class="fa-solid fa-arrow-left-long mr-2 opacity-70"></i> Keluar ke Web</button>
+            <button onclick="window.location.href='designer-dashboard.html'" class="w-full text-left text-sm text-brand-400 font-bold p-2.5 bg-brand-900/20 border border-brand-500/20 rounded-lg hover:bg-brand-900/40 transition flex items-center"><i class="fa-solid fa-rotate mr-2"></i> Demo Desainer</button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto relative scroll-smooth">
+        <div class="p-6 md:p-10 max-w-6xl mx-auto">
+            
+            <!-- TAB: OVERVIEW -->
+            <div id="cc-overview" class="tab-panel active">
+                <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/5 pb-6">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-white mb-1">Selamat datang, Siti! 👋</h1>
+                        <p class="text-slate-400 font-medium">Pantau progres identitas visual bisnis Anda di sini.</p>
+                    </div>
+                    <button onclick="showTab('new-project')" class="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition shadow-glow flex items-center w-fit"><i class="fa-solid fa-plus mr-2"></i> Proyek Baru</button>
+                </div>
+
+                <!-- Metrics -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                    <div class="glass-card p-6 rounded-2xl"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Proyek Aktif</p><h3 class="text-3xl font-extrabold text-white mb-2">2</h3><span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-md">▲ 1 baru minggu ini</span></div>
+                    <div class="glass-card p-6 rounded-2xl"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Proyek Selesai</p><h3 class="text-3xl font-extrabold text-white mb-2">1</h3><span class="text-xs font-medium text-slate-500">Total dari awal</span></div>
+                    <div class="glass-card p-6 rounded-2xl"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Revisi Tersisa</p><h3 class="text-3xl font-extrabold text-white mb-2">3</h3><span class="text-xs font-medium text-slate-500">Paket Profesional</span></div>
+                    <div class="glass-card p-6 rounded-2xl"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Total Investasi</p><h3 class="text-3xl font-extrabold text-white mb-2">Rp2jt</h3><span class="text-xs font-medium text-slate-500">Untuk 2 proyek</span></div>
+                </div>
+
+                <h2 class="font-bold text-xl text-white mb-4">Aktivitas Terkini</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Card 1 -->
+                    <div class="glass-card rounded-2xl p-6 cursor-pointer group hover:border-brand-500/50" onclick="showTab('workspace')">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center text-xl group-hover:bg-brand-500 group-hover:text-white transition-colors"><i class="fa-solid fa-pen-ruler"></i></div>
+                                <div><h4 class="font-extrabold text-white text-lg group-hover:text-brand-400 transition-colors" id="ov-proj-title">Warung Makan Sri</h4><p class="text-xs font-medium text-slate-400 mt-0.5">Paket Profesional</p></div>
+                            </div>
+                            <span class="bg-blue-500/10 text-brand-400 border border-brand-500/30 px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold whitespace-nowrap">Review Desain</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded-full mb-3 overflow-hidden"><div class="bg-brand-500 h-full rounded-full" style="width:70%"></div></div>
+                        <div class="flex justify-between text-xs font-semibold text-slate-500 mt-4 pt-4 border-t border-white/5">
+                            <span class="flex items-center gap-1"><i class="fa-regular fa-clock"></i> Update 2 jam lalu</span>
+                            <span>Revisi: 1/3</span>
+                        </div>
+                    </div>
+                    <!-- Card 2 -->
+                    <div class="glass-card rounded-2xl p-6 group hover:border-amber-500/50">
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-xl group-hover:bg-amber-500 group-hover:text-white transition-colors"><i class="fa-solid fa-palette"></i></div>
+                                <div><h4 class="font-extrabold text-white text-lg group-hover:text-amber-400 transition-colors">Sri Catering</h4><p class="text-xs font-medium text-slate-400 mt-0.5">Paket Starter</p></div>
+                            </div>
+                            <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold whitespace-nowrap">Dikerjakan</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded-full mb-3 overflow-hidden"><div class="bg-amber-400 h-full rounded-full shadow-[0_0_10px_rgba(251,191,36,0.5)]" style="width:40%"></div></div>
+                        <div class="flex justify-between text-xs font-semibold text-slate-500 mt-4 pt-4 border-t border-white/5">
+                            <span class="flex items-center gap-1"><i class="fa-regular fa-clock"></i> Update 1 hari lalu</span>
+                            <span>Revisi: 0/1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: NEW PROJECT (AI FORM) -->
+            <div id="cc-new-project" class="tab-panel">
+                <div class="mb-8 border-b border-white/5 pb-6 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-brand-500 to-purple-600 rounded-xl flex items-center justify-center text-white text-xl shadow-glow"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                    <div>
+                        <h1 class="text-2xl font-extrabold text-white mb-1">Mulai Proyek Baru</h1>
+                        <p class="text-slate-400 font-medium text-sm">Jawab form singkat ini, AI kami akan membantu menyusun strategi visual Anda.</p>
+                    </div>
+                </div>
+                
+                <div class="max-w-3xl mx-auto mt-10">
+                    
+                    <!-- AI Disclaimer Warning -->
+                    <div class="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl mb-6 flex items-start gap-3 shadow-sm backdrop-blur-sm">
+                        <i class="fa-solid fa-circle-exclamation text-amber-400 mt-1"></i>
+                        <div>
+                            <h4 class="text-sm font-bold text-amber-400">Perhatian: Estetika Bersifat Subjektif</h4>
+                            <p class="text-xs text-amber-200/70 mt-1 leading-relaxed">Mohon berikan arahan dan referensi yang jelas. Lebih baik sedikit revisi untuk menjaga efisiensi.</p>
+                        </div>
+                    </div>
+
+                    <!-- Elegant Dark Stepper -->
+                    <div class="flex items-center justify-between mb-12 relative px-2">
+                        <div class="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-slate-800 z-0 rounded-full"></div>
+                        <div class="absolute left-6 top-1/2 -translate-y-1/2 h-1 bg-brand-500 shadow-[0_0_10px_rgba(14,165,233,0.5)] z-0 transition-all duration-500 ease-out rounded-full" id="ai-progress-bar" style="width:0%"></div>
+                        
+                        <div class="relative z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-brand-600 text-white shadow-glow ring-8 ring-[#020617] ai-step-indicator transition-colors duration-300" id="ind-0">1</div>
+                        <div class="relative z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-slate-800 text-slate-400 border border-slate-700 ring-8 ring-[#020617] ai-step-indicator transition-colors duration-300" id="ind-1">2</div>
+                        <div class="relative z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-slate-800 text-slate-400 border border-slate-700 ring-8 ring-[#020617] ai-step-indicator transition-colors duration-300" id="ind-2">3</div>
+                        <div class="relative z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-slate-800 text-slate-400 border border-slate-700 ring-8 ring-[#020617] ai-step-indicator transition-colors duration-300" id="ind-3">4</div>
+                    </div>
+
+                    <!-- Step 1: Info Dasar -->
+                    <div class="ai-step-content active" id="step-content-0">
+                        <div class="glass-card p-8 md:p-10 rounded-2xl mb-6">
+                            <h3 class="text-xl font-extrabold text-white mb-2">Informasi Dasar</h3>
+                            <p class="text-sm text-slate-400 mb-8 font-medium">Ceritakan identitas awal bisnis Anda kepada kami.</p>
+                            <div class="space-y-6">
+                                <div><label class="block text-sm font-bold text-slate-300 mb-2">Nama Brand / Usaha</label><input type="text" id="ai-brand-name" class="w-full rounded-xl p-3.5 text-sm font-medium" placeholder="Cth: Kopi Senja, Butik Anita..."></div>
+                                <div><label class="block text-sm font-bold text-slate-300 mb-2">Industri Bisnis</label>
+                                    <select id="ai-brand-ind" class="w-full rounded-xl p-3.5 text-sm font-medium cursor-pointer">
+                                        <option value="" disabled selected>Pilih kategori industri...</option>
+                                        <option>F&B (Makanan & Minuman)</option><option>Fashion & Busana</option><option>Jasa & Konsultan</option><option>Retail & Toko</option><option>Kecantikan & Perawatan</option><option>Teknologi</option>
+                                    </select>
+                                </div>
+                                <div><label class="block text-sm font-bold text-slate-300 mb-2">Deskripsi & Nilai Unik</label><textarea rows="4" class="w-full rounded-xl p-3.5 text-sm font-medium resize-none" placeholder="Apa yang Anda jual? Apa yang membedakan produk Anda dari kompetitor?"></textarea></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-6"><button onclick="goToAiStep(1)" class="bg-white hover:bg-slate-200 text-slate-900 px-8 py-3.5 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5">Lanjut ke Target Pasar <i class="fa-solid fa-arrow-right ml-2"></i></button></div>
+                    </div>
+
+                    <!-- Step 2: Target Pasar -->
+                    <div class="ai-step-content hidden" id="step-content-1">
+                        <div class="glass-card p-8 md:p-10 rounded-2xl mb-6">
+                            <h3 class="text-xl font-extrabold text-white mb-2">Target Pasar</h3>
+                            <p class="text-sm text-slate-400 mb-8 font-medium">Siapa audiens yang ingin Anda jangkau dengan brand ini?</p>
+                            <div class="space-y-6">
+                                <div><label class="block text-sm font-bold text-slate-300 mb-2">Target Usia Dominan</label>
+                                    <select class="w-full rounded-xl p-3.5 text-sm font-medium cursor-pointer"><option>15-25 tahun (Gen Z)</option><option>25-40 tahun (Milenial)</option><option>35-55 tahun (Gen X)</option><option>Semua Usia</option></select>
+                                </div>
+                                <div><label class="block text-sm font-bold text-slate-300 mb-2">Segmen Kelas Ekonomi</label>
+                                    <select class="w-full rounded-xl p-3.5 text-sm font-medium cursor-pointer"><option>Ekonomi (Terjangkau)</option><option>Menengah</option><option>Premium / Eksklusif</option></select>
+                                </div>
+                                <div><label class="block text-sm font-bold text-slate-300 mb-2">Jangkauan Area Penjualan</label>
+                                    <select class="w-full rounded-xl p-3.5 text-sm font-medium cursor-pointer"><option>Lokal (1 Kota)</option><option>Regional (Provinsi)</option><option>Nasional</option><option>Internasional</option></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between mt-6">
+                            <button onclick="goToAiStep(0)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-6 py-3.5 rounded-xl font-bold text-sm transition-all"><i class="fa-solid fa-arrow-left mr-2"></i> Kembali</button>
+                            <button onclick="goToAiStep(2)" class="bg-white hover:bg-slate-200 text-slate-900 px-8 py-3.5 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5">Lanjut ke Karakter Brand <i class="fa-solid fa-arrow-right ml-2"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Karakter -->
+                    <div class="ai-step-content hidden" id="step-content-2">
+                        <div class="glass-card p-8 md:p-10 rounded-2xl mb-6">
+                            <h3 class="text-xl font-extrabold text-white mb-2">Karakter & Kepribadian</h3>
+                            <p class="text-sm text-slate-400 mb-8 font-medium">Pilih gaya komunikasi visual yang mencerminkan "jiwa" brand Anda.</p>
+                            <div class="space-y-8">
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-300 mb-4">Pilih 1-3 Karakter (Brand Voice)</label>
+                                    <div class="flex flex-wrap gap-2.5" id="ai-tags-container">
+                                        <!-- Filled via JS -->
+                                    </div>
+                                </div>
+                                <div class="pt-6 border-t border-white/5">
+                                    <label class="block text-sm font-bold text-slate-300 mb-2">Referensi Brand Idaman (Opsional)</label>
+                                    <input type="text" class="w-full rounded-xl p-3.5 text-sm font-medium" placeholder="Cth: Ingin terlihat elegan seperti Apple, atau ramah seperti Gojek...">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between mt-6">
+                            <button onclick="goToAiStep(1)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-6 py-3.5 rounded-xl font-bold text-sm transition-all"><i class="fa-solid fa-arrow-left mr-2"></i> Kembali</button>
+                            <button onclick="startAiProcessing()" class="bg-gradient-to-r from-brand-600 to-brand-800 hover:from-brand-500 hover:to-brand-700 text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-glow hover:-translate-y-0.5 transition-all flex items-center"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Generate AI Brief</button>
+                        </div>
+                    </div>
+
+                    <!-- Loading Step -->
+                    <div class="ai-step-content hidden" id="step-content-loading">
+                        <div class="glass-card p-16 rounded-2xl text-center flex flex-col items-center justify-center min-h-[400px] relative overflow-hidden">
+                            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-brand-600/20 blur-[80px] rounded-full"></div>
+                            <div class="loader mb-6 relative z-10"></div>
+                            <h3 class="text-2xl font-extrabold text-white mb-3 relative z-10">Memproses DNA Brand Anda...</h3>
+                            <p class="text-sm font-medium text-brand-300 relative z-10" id="ai-loading-text">AI sedang mengekstrak kata kunci dan menyusun strategi visual.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Moodboard & Checkout -->
+                    <div class="ai-step-content hidden" id="step-content-3">
+                        <div class="mb-8 border-b border-white/5 pb-6">
+                            <h3 class="text-2xl font-extrabold text-white mb-2"><i class="fa-solid fa-palette text-brand-500 mr-2"></i> Arahan Visual Anda Siap!</h3>
+                            <p class="text-sm font-medium text-slate-400">Berdasarkan brief Anda, AI merekomendasikan 3 arah visual. Anda bisa mengunggah referensi kustom.</p>
+                        </div>
+                        
+                        <!-- AI Brief Card -->
+                        <div class="bg-slate-900/80 border border-slate-700 rounded-2xl p-6 mb-8 text-white relative overflow-hidden shadow-md">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-brand-500 rounded-full blur-[60px] opacity-20"></div>
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest text-brand-400 mb-3 flex items-center"><i class="fa-solid fa-file-lines mr-2"></i> Rangkuman Strategic Brief</h4>
+                            <p class="text-sm text-slate-300 leading-relaxed font-medium">Mengembangkan identitas visual profesional untuk <strong class="text-white" id="out-brand">Brand Baru</strong> di sektor <strong class="text-white" id="out-ind">F&B</strong>. Fokus pada penyampaian karakter <strong class="text-white" id="out-tags">Modern, Minimalis</strong> untuk membangun kepercayaan audiens target.</p>
+                        </div>
+
+                        <!-- Custom Reference Upload -->
+                        <div class="bg-brand-900/10 border border-brand-500/30 border-dashed rounded-xl p-8 mb-8 text-center transition-all hover:bg-brand-900/20 backdrop-blur-sm">
+                            <div class="w-12 h-12 bg-brand-500/20 text-brand-400 border border-brand-500/40 rounded-full flex items-center justify-center text-xl mx-auto mb-4"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                            <h4 class="font-extrabold text-brand-100 mb-2">Punya Referensi Visual Sendiri?</h4>
+                            <p class="text-sm text-brand-200/70 mb-6 max-w-md mx-auto">Unggah gambar yang Anda sukai agar desainer langsung memahami selera subjektif Anda secara spesifik.</p>
+                            <label class="bg-brand-600 hover:bg-brand-500 text-white px-8 py-3 rounded-xl font-bold text-sm cursor-pointer shadow-md transition inline-block">
+                                Unggah Gambar Anda
+                                <input type="file" class="hidden" accept="image/*" onchange="alert('Gambar referensi berhasil diunggah dan disinkronkan.')">
+                            </label>
+                        </div>
+
+                        <!-- Moodboards -->
+                        <div class="mb-4">
+                            <h4 class="font-bold text-slate-300 mb-4">Atau Pilih dari AI Moodboard:</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                                <div class="moodboard-card rounded-2xl overflow-hidden border border-slate-700 bg-slate-900/50" onclick="selectMB(this, 'Segar & Modern')">
+                                    <div class="h-40 bg-slate-800 flex flex-wrap relative">
+                                        <div class="w-1/2 h-full overflow-hidden bg-[#1e3a8a]"><img src="https://images.unsplash.com/photo-1600861194942-f883de0dfe96?auto=format&fit=crop&w=300&q=80" class="w-full h-full object-cover opacity-80 mix-blend-screen"></div>
+                                        <div class="w-1/2 h-full flex flex-col"><div class="h-1/2 overflow-hidden bg-slate-700 border-b border-slate-800"><img src="https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover"></div><div class="h-1/2 overflow-hidden bg-slate-800"><img src="https://images.unsplash.com/photo-1616628188550-808682f392a4?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover"></div></div>
+                                        <div class="absolute bottom-2 left-2 flex gap-0.5 shadow-md rounded bg-black/40 backdrop-blur-sm p-1 border border-white/10">
+                                            <div class="w-4 h-4 rounded-full bg-[#1e3a8a]"></div><div class="w-4 h-4 rounded-full bg-[#2563eb]"></div><div class="w-4 h-4 rounded-full bg-[#f59e0b]"></div>
+                                        </div>
+                                    </div>
+                                    <div class="p-5 text-center">
+                                        <h5 class="font-extrabold text-sm text-white mb-1">Segar & Modern</h5>
+                                        <p class="text-xs font-medium text-slate-400">Biru profesional, aksen cerah.</p>
+                                    </div>
+                                </div>
+                                <div class="moodboard-card rounded-2xl overflow-hidden border border-slate-700 bg-slate-900/50" onclick="selectMB(this, 'Hangat & Natural')">
+                                    <div class="h-40 bg-slate-800 flex flex-wrap relative">
+                                        <div class="w-1/2 h-full overflow-hidden bg-[#92400e]"><img src="https://images.unsplash.com/photo-1611078489935-0cb964de46d6?auto=format&fit=crop&w=300&q=80" class="w-full h-full object-cover opacity-80 mix-blend-screen"></div>
+                                        <div class="w-1/2 h-full flex flex-col"><div class="h-1/2 overflow-hidden bg-slate-700 border-b border-slate-800"><img src="https://images.unsplash.com/photo-1605265002446-24950e930fbf?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover"></div><div class="h-1/2 overflow-hidden bg-slate-800"><img src="https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover"></div></div>
+                                        <div class="absolute bottom-2 left-2 flex gap-0.5 shadow-md rounded bg-black/40 backdrop-blur-sm p-1 border border-white/10">
+                                            <div class="w-4 h-4 rounded-full bg-[#92400e]"></div><div class="w-4 h-4 rounded-full bg-[#d97706]"></div><div class="w-4 h-4 rounded-full bg-[#78350f]"></div>
+                                        </div>
+                                    </div>
+                                    <div class="p-5 text-center">
+                                        <h5 class="font-extrabold text-sm text-white mb-1">Hangat & Natural</h5>
+                                        <p class="text-xs font-medium text-slate-400">Earthy tones, feel otentik.</p>
+                                    </div>
+                                </div>
+                                <div class="moodboard-card rounded-2xl overflow-hidden border border-slate-700 bg-slate-900/50" onclick="selectMB(this, 'Elegan & Bold')">
+                                    <div class="h-40 bg-slate-800 flex flex-wrap relative">
+                                        <div class="w-1/2 h-full overflow-hidden bg-[#1e1b4b]"><img src="https://images.unsplash.com/photo-1557682250-33bd709cbe85?auto=format&fit=crop&w=300&q=80" class="w-full h-full object-cover opacity-80 mix-blend-screen"></div>
+                                        <div class="w-1/2 h-full flex flex-col"><div class="h-1/2 overflow-hidden bg-slate-700 border-b border-slate-800"><img src="https://images.unsplash.com/photo-1505909182942-e2f09aee3e89?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover"></div><div class="h-1/2 overflow-hidden bg-slate-800"><img src="https://images.unsplash.com/photo-1581339399838-2a1203b6b150?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover"></div></div>
+                                        <div class="absolute bottom-2 left-2 flex gap-0.5 shadow-md rounded bg-black/40 backdrop-blur-sm p-1 border border-white/10">
+                                            <div class="w-4 h-4 rounded-full bg-[#1e1b4b]"></div><div class="w-4 h-4 rounded-full bg-[#6d28d9]"></div><div class="w-4 h-4 rounded-full bg-[#c4b5fd]"></div>
+                                        </div>
+                                    </div>
+                                    <div class="p-5 text-center">
+                                        <h5 class="font-extrabold text-sm text-white mb-1">Elegan & Bold</h5>
+                                        <p class="text-xs font-medium text-slate-400">Premium, gelap, dan mewah.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reference Gallery (Appears after Moodboard click) -->
+                        <div id="ai-ref-gallery" class="hidden border-t border-white/5 pt-8 mb-10">
+                            <div class="flex justify-between items-end mb-6">
+                                <div>
+                                    <h4 class="font-extrabold text-lg text-white mb-1">Pilih Gambar Referensi</h4>
+                                    <p class="text-xs font-medium text-slate-400">Pilih 5-10 gambar yang mendekati selera Anda untuk gaya <strong id="out-mood" class="text-brand-400">...</strong>.</p>
+                                </div>
+                                <div class="text-[10px] font-extrabold bg-slate-800 text-slate-300 px-4 py-2 rounded-lg border border-slate-700 tracking-widest uppercase">
+                                    Terpilih: <span id="ref-count" class="text-brand-400 text-sm ml-1">0</span> / 10
+                                </div>
+                            </div>
+                            <div id="ref-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3">
+                                <!-- Injected via JS -->
+                            </div>
+                            <p id="ref-error" class="text-xs font-bold text-rose-400 hidden bg-rose-500/10 p-3 rounded-lg border border-rose-500/20"><i class="fa-solid fa-circle-exclamation mr-1"></i> Wajib memilih minimal 5 gambar referensi untuk melanjutkan.</p>
+                        </div>
+
+                        <!-- Checkout Action -->
+                        <div class="glass-card rounded-2xl p-6 mb-8">
+                            <div class="flex justify-between items-center border-b border-white/5 pb-4 mb-4">
+                                <h4 class="font-extrabold text-white">Pilih Paket Premium</h4>
+                                <a href="landing-page.html#pricing" class="text-xs font-bold text-brand-400 hover:underline">Bandingkan Fitur</a>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <label class="flex flex-col p-4 border border-slate-700 bg-slate-900/50 rounded-xl cursor-pointer hover:bg-slate-800 transition-colors relative">
+                                    <input type="radio" name="pack" class="absolute top-4 right-4 w-4 h-4 text-brand-500 bg-slate-800 border-slate-600 focus:ring-brand-500 focus:ring-offset-slate-900">
+                                    <span class="text-sm font-extrabold text-white mb-1">Starter</span>
+                                    <span class="text-lg font-extrabold text-brand-400 mb-2">Rp500k</span>
+                                    <span class="text-xs font-medium text-slate-400">Logo dasar & Warna</span>
+                                </label>
+                                <label class="flex flex-col p-4 border-2 border-brand-500 bg-brand-900/10 rounded-xl cursor-pointer relative shadow-sm">
+                                    <div class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-brand-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Populer</div>
+                                    <input type="radio" name="pack" checked class="absolute top-4 right-4 w-4 h-4 text-brand-500 bg-slate-800 border-slate-600 focus:ring-brand-500 focus:ring-offset-slate-900">
+                                    <span class="text-sm font-extrabold text-white mb-1">Profesional</span>
+                                    <span class="text-lg font-extrabold text-brand-400 mb-2">Rp1.5jt</span>
+                                    <span class="text-xs font-medium text-brand-200/70">Logo + Guidelines PDF</span>
+                                </label>
+                                <label class="flex flex-col p-4 border border-slate-700 bg-slate-900/50 rounded-xl cursor-pointer hover:bg-slate-800 transition-colors relative">
+                                    <input type="radio" name="pack" class="absolute top-4 right-4 w-4 h-4 text-brand-500 bg-slate-800 border-slate-600 focus:ring-brand-500 focus:ring-offset-slate-900">
+                                    <span class="text-sm font-extrabold text-white mb-1">Komplit</span>
+                                    <span class="text-lg font-extrabold text-brand-400 mb-2">Rp3jt</span>
+                                    <span class="text-xs font-medium text-slate-400">+ Kemasan & Sosmed</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between mt-8 border-t border-white/5 pt-6">
+                            <p class="text-xs font-bold text-slate-400 flex items-center"><i class="fa-solid fa-lock text-emerald-500 mr-2 text-lg"></i> Sistem Escrow:<br>Dana ditahan platform hingga desain disetujui.</p>
+                            <button id="btn-checkout" onclick="finishCheckout()" disabled class="bg-slate-800 text-slate-500 px-8 py-3.5 rounded-xl font-extrabold text-sm transition-all duration-300 cursor-not-allowed">Bayar & Mulai Proyek <i class="fa-solid fa-lock ml-2"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: PROJECTS LIST -->
+            <div id="cc-projects" class="tab-panel">
+                <div class="mb-8 border-b border-white/5 pb-6">
+                    <h1 class="text-3xl font-extrabold text-white mb-2">Daftar Proyek</h1>
+                    <p class="text-slate-400 font-medium">Akses dan kelola seluruh identitas visual brand Anda.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Active Card -->
+                    <div class="glass-card rounded-2xl p-6 cursor-pointer group flex flex-col h-full hover:border-brand-500/50" onclick="showTab('workspace')">
+                        <div class="flex justify-between items-start mb-6">
+                            <div><h4 class="font-extrabold text-white text-xl group-hover:text-brand-400 transition-colors" id="list-proj-title">Warung Makan Sri</h4><p class="text-xs font-medium text-slate-400 mt-1">Paket Profesional · Dipesan 28 Des 2025</p></div>
+                            <span class="bg-brand-500/10 text-brand-400 border border-brand-500/30 px-3 py-1 rounded-full text-[10px] tracking-wider uppercase font-bold whitespace-nowrap">Review Klien</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded-full mb-4 overflow-hidden"><div class="bg-brand-500 h-full rounded-full shadow-[0_0_10px_rgba(14,165,233,0.5)]" style="width:70%"></div></div>
+                        <div class="flex items-center gap-2 mb-6">
+                            <div class="w-6 h-6 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center text-[10px] font-bold">RP</div>
+                            <div class="text-xs font-medium text-slate-300">Desainer: Rizky Pratama <span class="text-amber-400 ml-1">★4.9</span></div>
+                        </div>
+                        <div class="flex justify-between items-center text-xs font-bold text-slate-500 border-t border-white/5 pt-4 mt-auto">
+                            <span class="bg-slate-800/80 px-2 py-1 rounded text-slate-400"><i class="fa-regular fa-clock mr-1"></i> Update 2 jam lalu</span>
+                            <span>Revisi: 1/3</span>
+                        </div>
+                    </div>
+                    <!-- Finished Card -->
+                    <div class="glass-panel border-white/5 rounded-2xl p-6 opacity-60 hover:opacity-100 transition-opacity flex flex-col h-full">
+                        <div class="flex justify-between items-start mb-6">
+                            <div><h4 class="font-extrabold text-white text-xl">Sri Oleh-oleh</h4><p class="text-xs font-medium text-slate-400 mt-1">Paket Starter · Selesai 15 Nov 2025</p></div>
+                            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-[10px] tracking-wider uppercase font-bold whitespace-nowrap">Selesai</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-1.5 rounded-full mb-4"><div class="bg-emerald-500 h-full rounded-full" style="width:100%"></div></div>
+                        <div class="flex justify-between items-center text-xs font-bold border-t border-white/5 pt-4 mt-auto">
+                            <span class="text-slate-500">Pekerjaan ditutup</span>
+                            <button class="bg-slate-800 border border-slate-700 text-white hover:bg-slate-700 px-4 py-2 rounded-lg transition-colors"><i class="fa-solid fa-download mr-1"></i> File Final</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: WORKSPACE -->
+            <div id="cc-workspace" class="tab-panel">
+                <div class="mb-8 flex justify-between items-center flex-wrap gap-4 border-b border-white/5 pb-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <button onclick="showTab('overview')" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-arrow-left"></i></button>
+                            <h1 class="text-2xl font-extrabold text-white" id="ws-header-title">Ruang Kerja: Warung Makan Sri</h1>
+                        </div>
+                        <p class="text-slate-400 font-medium text-sm ml-7">Paket Profesional · Sedang dalam tahap Review</p>
+                    </div>
+                    <div class="flex items-center text-[10px] uppercase tracking-widest font-bold bg-slate-900/60 px-4 py-2.5 border border-slate-800 rounded-xl shadow-sm backdrop-blur">
+                        <span class="text-emerald-400 flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Brief</span>
+                        <span class="w-4 border-t-2 border-slate-700 mx-2"></span>
+                        <span class="text-brand-400 flex items-center gap-1.5"><i class="fa-solid fa-circle-dot"></i> Review</span>
+                        <span class="w-4 border-t-2 border-slate-700 mx-2"></span>
+                        <span class="text-slate-600 flex items-center gap-1.5"><i class="fa-regular fa-circle"></i> Final</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Main Workspace Area -->
+                    <div class="lg:col-span-2 glass-card rounded-2xl flex flex-col h-[700px]">
+                        <!-- Inner Tabs -->
+                        <div class="flex px-6 pt-4 border-b border-white/5">
+                            <button class="wstab-btn active px-4 py-3 text-sm font-extrabold text-brand-400 border-b-2 border-brand-400 focus:outline-none transition-colors" onclick="switchWsTab(this, 'ws-view-preview')">Draft Desain</button>
+                            <button class="wstab-btn px-4 py-3 text-sm font-bold text-slate-400 hover:text-white border-b-2 border-transparent focus:outline-none transition-colors" onclick="switchWsTab(this, 'ws-view-chat')">Diskusi & Revisi</button>
+                            <button class="wstab-btn px-4 py-3 text-sm font-bold text-slate-400 hover:text-white border-b-2 border-transparent focus:outline-none transition-colors" onclick="switchWsTab(this, 'ws-view-files')">File Final <i class="fa-solid fa-lock text-[10px] ml-1 opacity-50"></i></button>
+                        </div>
+
+                        <!-- View: Preview -->
+                        <div id="ws-view-preview" class="ws-inner-view active p-6 flex-1 flex flex-col overflow-y-auto">
+                            <div class="bg-[#020617] rounded-xl p-8 md:p-12 text-center flex-1 flex flex-col items-center justify-center mb-6 relative overflow-hidden shadow-inner group border border-white/5">
+                                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
+                                <div class="absolute top-4 right-4 bg-white/10 backdrop-blur border border-white/10 text-white text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded">Draft v1.0</div>
+                                
+                                <div class="w-32 h-32 bg-white rounded-full flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(255,255,255,0.1)] relative z-10 transform group-hover:scale-105 transition-transform duration-500">
+                                    <span class="font-serif text-5xl text-brand-900 italic font-extrabold" id="ws-logo-letter">W</span>
+                                </div>
+                                <h3 class="font-serif text-3xl text-white font-bold italic mb-3 relative z-10 tracking-wide" id="ws-logo-full">Warung Makan Sri</h3>
+                                <p class="text-[10px] text-slate-400 tracking-[0.3em] uppercase mb-8 relative z-10 font-bold" id="ws-logo-sub">AUTHENTIC · MODERN</p>
+                                
+                                <div class="flex gap-3 justify-center relative z-10">
+                                    <div class="w-6 h-6 rounded-full bg-[#1e3a8a] ring-2 ring-white/10 shadow-lg"></div>
+                                    <div class="w-6 h-6 rounded-full bg-[#2563eb] ring-2 ring-white/10 shadow-lg"></div>
+                                    <div class="w-6 h-6 rounded-full bg-[#f59e0b] ring-2 ring-white/10 shadow-lg"></div>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 mt-auto pt-4 border-t border-white/5">
+                                <button class="flex-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 font-bold py-3.5 rounded-xl transition-colors shadow-sm"><i class="fa-solid fa-check mr-2"></i> Setujui Desain & Lepas Dana</button>
+                                <button onclick="switchWsTab(document.querySelectorAll('.wstab-btn')[1], 'ws-view-chat')" class="flex-1 bg-slate-800/50 border border-slate-700 text-white hover:border-brand-500/50 hover:text-brand-400 font-bold py-3.5 rounded-xl transition-colors shadow-sm"><i class="fa-solid fa-pen-to-square mr-2"></i> Ajukan Revisi</button>
+                            </div>
+                        </div>
+
+                        <!-- View: Chat -->
+                        <div id="ws-view-chat" class="ws-inner-view hidden p-6 flex-1 flex flex-col">
+                            <div class="flex-1 overflow-y-auto pr-4 flex flex-col gap-5 mb-4 custom-scrollbar">
+                                <!-- Designer Msg -->
+                                <div class="flex items-end gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500/30 text-brand-400 flex items-center justify-center font-bold text-[10px] shrink-0 mb-1">RP</div>
+                                    <div class="bg-slate-800 text-slate-300 p-4 rounded-2xl rounded-bl-sm text-sm border border-slate-700 shadow-sm max-w-[85%] font-medium">
+                                        Halo Kak! Ini adalah draft pertama berdasarkan referensi gaya yang Anda pilih di sistem. Saya menggunakan palet warna solid agar terlihat premium. Mohon feedbacknya! 😊
+                                        <span class="block text-[10px] text-slate-500 mt-2">10:30 WIB</span>
+                                    </div>
+                                </div>
+                                <!-- Client Msg -->
+                                <div class="flex items-end gap-3 justify-end">
+                                    <div class="bg-brand-600 text-white p-4 rounded-2xl rounded-br-sm text-sm shadow-glow max-w-[85%] font-medium">
+                                        Bagus sekali! Tapi bisa tidak warna aksen kuningnya dibuat sedikit lebih emas gelap? Supaya kesan elegannya lebih dapat.
+                                        <span class="block text-[10px] text-brand-200 mt-2 text-right">11:15 WIB</span>
+                                    </div>
+                                </div>
+                                <!-- Designer Msg -->
+                                <div class="flex items-end gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500/30 text-brand-400 flex items-center justify-center font-bold text-[10px] shrink-0 mb-1">RP</div>
+                                    <div class="bg-slate-800 text-slate-300 p-4 rounded-2xl rounded-bl-sm text-sm border border-slate-700 shadow-sm max-w-[85%] font-medium">
+                                        Tentu Kak! Saya tangkap maksudnya. Saya akan buatkan 2 variasi warna emas yang lebih dalam. Akan saya upload besok pagi ya 🙏
+                                        <span class="block text-[10px] text-slate-500 mt-2">11:20 WIB</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 pt-5 border-t border-white/5 mt-auto">
+                                <input type="text" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-5 py-3 text-sm font-medium focus:ring-1 focus:ring-brand-500 text-white placeholder-slate-500 outline-none transition-all" placeholder="Ketik catatan revisi Anda di sini...">
+                                <button class="bg-brand-600 hover:bg-brand-500 text-white px-6 rounded-xl font-bold text-sm transition-colors shadow-glow"><i class="fa-solid fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- View: Files -->
+                        <div id="ws-view-files" class="ws-inner-view hidden p-6 flex-1 flex flex-col">
+                            <div class="bg-amber-500/10 border border-amber-500/20 text-amber-400 p-4 rounded-xl flex items-start gap-3 mb-6">
+                                <i class="fa-solid fa-lock mt-0.5"></i>
+                                <div class="text-sm font-medium text-amber-200/70">
+                                    <strong class="block mb-1 text-amber-400">File Terkunci</strong>
+                                    Silakan <span class="underline cursor-pointer font-bold hover:text-amber-300" onclick="switchWsTab(document.querySelectorAll('.wstab-btn')[0], 'ws-view-preview')">Setujui Desain & Lepas Dana</span> pada tab Preview terlebih dahulu untuk mengunduh semua file final master Anda.
+                                </div>
+                            </div>
+                            <div class="space-y-3 opacity-50 grayscale select-none pointer-events-none">
+                                <div class="flex items-center justify-between p-4 border border-slate-700 rounded-xl bg-slate-800/50">
+                                    <div class="flex items-center gap-4"><div class="w-10 h-10 bg-slate-900 border border-slate-700 rounded-lg flex items-center justify-center text-slate-500 text-lg"><i class="fa-solid fa-image"></i></div><div><p class="text-sm font-bold text-white">Logo_Primary.png</p><p class="text-xs text-slate-500 font-medium mt-0.5">2.4 MB · High Res Transparent</p></div></div>
+                                    <button class="border border-slate-600 text-slate-500 px-4 py-1.5 rounded-lg text-xs font-bold">Unduh</button>
+                                </div>
+                                <div class="flex items-center justify-between p-4 border border-slate-700 rounded-xl bg-slate-800/50">
+                                    <div class="flex items-center gap-4"><div class="w-10 h-10 bg-slate-900 border border-slate-700 rounded-lg flex items-center justify-center text-slate-500 text-lg"><i class="fa-solid fa-vector-square"></i></div><div><p class="text-sm font-bold text-white">Logo_Master.ai</p><p class="text-xs text-slate-500 font-medium mt-0.5">1.2 MB · Adobe Illustrator Vector</p></div></div>
+                                    <button class="border border-slate-600 text-slate-500 px-4 py-1.5 rounded-lg text-xs font-bold">Unduh</button>
+                                </div>
+                                <div class="flex items-center justify-between p-4 border border-slate-700 rounded-xl bg-slate-800/50">
+                                    <div class="flex items-center gap-4"><div class="w-10 h-10 bg-slate-900 border border-slate-700 rounded-lg flex items-center justify-center text-slate-500 text-lg"><i class="fa-solid fa-file-pdf"></i></div><div><p class="text-sm font-bold text-white">Brand_Guidelines.pdf</p><p class="text-xs text-slate-500 font-medium mt-0.5">8.5 MB · Panduan Merek</p></div></div>
+                                    <button class="border border-slate-600 text-slate-500 px-4 py-1.5 rounded-lg text-xs font-bold">Unduh</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Workspace Sidebar -->
+                    <div class="space-y-6">
+                        <div class="glass-card rounded-2xl p-6">
+                            <h4 class="font-extrabold text-[10px] uppercase tracking-widest mb-4 text-slate-400">👤 Desainer Anda</h4>
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-12 h-12 bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-inner">RP</div>
+                                <div>
+                                    <p class="font-extrabold text-sm text-white">Rizky Pratama</p>
+                                    <p class="text-[11px] font-bold text-amber-400 mt-0.5"><i class="fa-solid fa-star"></i> 4.9 <span class="text-slate-500 font-medium">(87 proyek)</span></p>
+                                </div>
+                            </div>
+                            <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700/50 text-xs font-medium text-slate-400">
+                                <span class="block text-slate-300 font-bold mb-1">Spesialisasi</span>
+                                F&B, Retail, Gaya Minimalis.
+                            </div>
+                        </div>
+
+                        <div class="glass-card rounded-2xl p-6">
+                            <h4 class="font-extrabold text-[10px] uppercase tracking-widest mb-4 text-slate-400 flex items-center justify-between">📋 Rangkuman Brief <span class="text-[9px] bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-slate-300">Paket Pro</span></h4>
+                            <div class="space-y-3 text-xs font-medium mb-6">
+                                <div class="flex justify-between border-b border-white/5 pb-2"><span class="text-slate-500">Revisi Paket</span><strong class="text-white">3x Minor</strong></div>
+                                <div class="flex justify-between border-b border-white/5 pb-2"><span class="text-slate-500">Gaya Visual</span><strong class="text-brand-400" id="ws-side-mood">Segar & Modern</strong></div>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">Referensi Disetujui (<span id="ws-side-refcount">0</span>)</p>
+                                <div class="grid grid-cols-3 gap-2" id="ws-side-refgrid">
+                                    <!-- References injected here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        function showTab(tabId) {
+            document.querySelectorAll(`.tab-panel`).forEach(el => el.classList.remove('active'));
+            document.querySelectorAll(`.sidebar-item`).forEach(el => el.classList.remove('active'));
+            
+            const tabElem = document.getElementById('cc-' + tabId);
+            if(tabElem) tabElem.classList.add('active');
+            
+            const btnElem = document.getElementById('btn-cc-' + tabId);
+            if(btnElem) btnElem.classList.add('active');
+            
+            if(tabId === 'new-project') {
+                aiStep(0);
+                document.getElementById('ai-progress-bar').style.width = '0%';
+                document.querySelectorAll('.moodboard-card').forEach(c => c.classList.remove('selected'));
+                document.getElementById('ai-ref-gallery').classList.add('hidden');
+                
+                const btnCheck = document.getElementById('btn-checkout');
+                btnCheck.classList.remove('bg-brand-600', 'hover:bg-brand-500', 'text-white');
+                btnCheck.classList.add('bg-slate-800', 'text-slate-500', 'cursor-not-allowed');
+                btnCheck.setAttribute('disabled', 'true');
+                
+                selectedReferences = [];
+                selectedMoodboardName = null;
+            }
+        }
+
+        function switchWsTab(btn, panelId) {
+            document.querySelectorAll('.wstab-btn').forEach(b => {
+                b.classList.remove('active', 'text-brand-400', 'border-b-2', 'border-brand-400', 'font-extrabold');
+                b.classList.add('text-slate-400', 'font-bold', 'border-transparent');
+            });
+            btn.classList.add('active', 'text-brand-400', 'border-b-2', 'border-brand-400', 'font-extrabold');
+            btn.classList.remove('text-slate-400', 'font-bold', 'border-transparent');
+
+            document.querySelectorAll('.ws-inner-view').forEach(p => { p.classList.add('hidden'); p.classList.remove('active'); });
+            document.getElementById(panelId).classList.remove('hidden');
+            setTimeout(() => document.getElementById(panelId).classList.add('active'), 10);
+        }
+
+        // --- AI GENERATOR LOGIC ---
+        const tagsContainer = document.getElementById('ai-tags-container');
+        const voiceTags = ['Ceria & Fun', 'Elegan & Mewah', 'Tegas & Profesional', 'Natural & Organik', 'Minimalis & Bersih', 'Bold & Berani', 'Hangat & Ramah', 'Modern & Tech'];
+        let selectedAiTags = [];
+
+        voiceTags.forEach(tag => {
+            const btn = document.createElement('button');
+            btn.className = 'px-5 py-2.5 border border-slate-700 bg-slate-900/50 text-slate-400 rounded-xl text-sm font-bold transition-all hover:bg-slate-800 hover:text-white';
+            btn.textContent = tag;
+            btn.onclick = () => {
+                if(selectedAiTags.includes(tag)){
+                    selectedAiTags = selectedAiTags.filter(t => t !== tag);
+                    btn.classList.remove('bg-brand-900/20', 'border-brand-500/50', 'text-brand-400');
+                    btn.classList.add('border-slate-700', 'bg-slate-900/50', 'text-slate-400');
+                } else {
+                    selectedAiTags.push(tag);
+                    btn.classList.add('bg-brand-900/20', 'border-brand-500/50', 'text-brand-400');
+                    btn.classList.remove('border-slate-700', 'bg-slate-900/50', 'text-slate-400');
+                }
+            };
+            tagsContainer.appendChild(btn);
+        });
+
+        function aiStep(n) {
+            document.querySelectorAll('.ai-step-content').forEach(s => { s.classList.add('hidden'); s.classList.remove('active'); });
+            const target = document.getElementById('step-content-' + n);
+            if(target) { target.classList.remove('hidden'); setTimeout(() => target.classList.add('active'), 10); }
+            
+            if(n <= 3) {
+                for(let i=0; i<=3; i++){
+                    let ind = document.getElementById('ind-' + i);
+                    if(i < n) {
+                        ind.className = "relative z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 shadow-sm ring-8 ring-[#020617] ai-step-indicator transition-all duration-300";
+                        ind.innerHTML = '<i class="fa-solid fa-check"></i>';
+                    } else if (i === n) {
+                        ind.className = "relative z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-brand-600 text-white shadow-glow ring-8 ring-[#020617] ai-step-indicator transition-all duration-300 scale-110";
+                        ind.innerHTML = (i+1);
+                    } else {
+                        ind.className = "relative z-10 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-slate-800 text-slate-400 border border-slate-700 ring-8 ring-[#020617] ai-step-indicator transition-all duration-300";
+                        ind.innerHTML = (i+1);
+                    }
+                }
+                document.getElementById('ai-progress-bar').style.width = (n * 33.3) + '%';
+            }
+        }
+        function goToAiStep(n) { aiStep(n); }
+
+        function startAiProcessing() {
+            document.querySelectorAll('.ai-step-content').forEach(s => s.classList.add('hidden'));
+            const loadStep = document.getElementById('step-content-loading');
+            loadStep.classList.remove('hidden');
+            setTimeout(() => loadStep.classList.add('active'), 10);
+            document.getElementById('ai-progress-bar').style.width = '100%';
+
+            let txt = document.getElementById('ai-loading-text');
+            setTimeout(() => { txt.textContent = "Menganalisis preferensi & gaya kompetitor..."; }, 1200);
+            setTimeout(() => { txt.textContent = "Membangun strategi referensi visual terbaik..."; }, 2500);
+
+            setTimeout(() => {
+                let bName = document.getElementById('ai-brand-name').value || 'Brand Baru';
+                let bInd = document.getElementById('ai-brand-ind').value || 'Industri';
+                document.getElementById('out-brand').textContent = bName;
+                document.getElementById('out-ind').textContent = bInd;
+                document.getElementById('out-tags').textContent = selectedAiTags.length > 0 ? selectedAiTags.join(', ') : 'Modern & Profesional';
+                aiStep(3);
+            }, 4000);
+        }
+
+        // --- MOODBOARD & REFERENCE GALLERY ---
+        const refData = {
+            'Segar & Modern': [
+                'https://images.unsplash.com/photo-1600861194942-f883de0dfe96?w=200&q=80', 'https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=200&q=80',
+                'https://images.unsplash.com/photo-1616628188550-808682f392a4?w=200&q=80', 'https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?w=200&q=80',
+                'https://images.unsplash.com/photo-1507120410856-1f35574c3b45?w=200&q=80', 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=200&q=80',
+                'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=200&q=80', 'https://images.unsplash.com/photo-1516962215378-7fa2e137ae93?w=200&q=80'
+            ],
+            'Hangat & Natural': [
+                'https://images.unsplash.com/photo-1611078489935-0cb964de46d6?w=200&q=80', 'https://images.unsplash.com/photo-1605265002446-24950e930fbf?w=200&q=80',
+                'https://images.unsplash.com/photo-1544816155-12df9643f363?w=200&q=80', 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=200&q=80',
+                'https://images.unsplash.com/photo-1606922518493-9c869ba17b8f?w=200&q=80', 'https://images.unsplash.com/photo-1523688882658-00fb30336214?w=200&q=80',
+                'https://images.unsplash.com/photo-1615397323204-7dd7b26e1fa0?w=200&q=80', 'https://images.unsplash.com/photo-1584589167171-541ce45f1eea?w=200&q=80'
+            ],
+            'Elegan & Bold': [
+                'https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=200&q=80', 'https://images.unsplash.com/photo-1505909182942-e2f09aee3e89?w=200&q=80',
+                'https://images.unsplash.com/photo-1581339399838-2a1203b6b150?w=200&q=80', 'https://images.unsplash.com/photo-1497215848135-24c653457a16?w=200&q=80',
+                'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=200&q=80', 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=200&q=80',
+                'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&q=80', 'https://images.unsplash.com/photo-1563200156-db2630cecc68?w=200&q=80'
+            ]
+        };
+
+        let selectedMoodboardName = null;
+        let selectedReferences = [];
+
+        function selectMB(el, name) {
+            document.querySelectorAll('.moodboard-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedMoodboardName = name;
+            
+            document.getElementById('out-mood').textContent = name;
+            const gallery = document.getElementById('ai-ref-gallery');
+            gallery.classList.remove('hidden');
+            setTimeout(() => gallery.classList.add('active'), 10);
+            
+            const grid = document.getElementById('ref-grid');
+            grid.innerHTML = '';
+            selectedReferences = [];
+            updateRefUI();
+
+            const imgs = refData[name] || [];
+            imgs.forEach(url => {
+                const div = document.createElement('div');
+                div.className = 'ref-item h-28 md:h-36 border-slate-700';
+                div.onclick = () => {
+                    const idx = selectedReferences.indexOf(url);
+                    if(idx > -1) {
+                        selectedReferences.splice(idx, 1);
+                        div.classList.remove('selected');
+                    } else {
+                        if(selectedReferences.length >= 10) return;
+                        selectedReferences.push(url);
+                        div.classList.add('selected');
+                    }
+                    updateRefUI();
+                };
+                div.innerHTML = `<img src="${url}" class="opacity-80 hover:opacity-100"><div class="check"><i class="fa-solid fa-check"></i></div>`;
+                grid.appendChild(div);
+            });
+        }
+
+        function updateRefUI() {
+            const count = selectedReferences.length;
+            document.getElementById('ref-count').textContent = count;
+            
+            const btn = document.getElementById('btn-checkout');
+            const err = document.getElementById('ref-error');
+            
+            if(count >= 5 && count <= 10) {
+                btn.removeAttribute('disabled');
+                btn.className = "bg-brand-600 hover:bg-brand-500 text-white px-8 py-3.5 rounded-xl font-extrabold text-sm shadow-glow transition-all duration-300 hover:-translate-y-0.5 cursor-pointer";
+                err.classList.add('hidden');
+            } else {
+                btn.setAttribute('disabled', 'true');
+                btn.className = "bg-slate-800 text-slate-500 px-8 py-3.5 rounded-xl font-extrabold text-sm transition-all duration-300 cursor-not-allowed";
+                if(count > 0) err.classList.remove('hidden');
+                else err.classList.add('hidden');
+            }
+        }
+
+        function finishCheckout() {
+            const brand = document.getElementById('ai-brand-name').value || 'Brand Baru';
+            
+            document.getElementById('ov-proj-title').textContent = brand;
+            document.getElementById('list-proj-title').textContent = brand;
+            document.getElementById('ws-header-title').textContent = `Ruang Kerja: ${brand}`;
+            document.getElementById('ws-logo-full').textContent = brand;
+            document.getElementById('ws-logo-letter').textContent = brand.charAt(0).toUpperCase();
+            document.getElementById('ws-logo-sub').textContent = selectedAiTags.length > 0 ? selectedAiTags.join(' · ').toUpperCase() : 'MODERN · ELEGANT';
+            document.getElementById('ws-side-mood').textContent = selectedMoodboardName;
+
+            const wGrid = document.getElementById('ws-side-refgrid');
+            wGrid.innerHTML = '';
+            document.getElementById('ws-side-refcount').textContent = selectedReferences.length;
+            selectedReferences.forEach(url => {
+                wGrid.innerHTML += `<div class="h-12 bg-slate-800 rounded-lg overflow-hidden border border-slate-700"><img src="${url}" class="w-full h-full object-cover opacity-80"></div>`;
+            });
+
+            alert("Pembayaran berhasil ditahan di sistem Escrow kami. Mendesuaikan ruang kerja.");
+            showTab('workspace');
+            switchWsTab(document.querySelectorAll('.wstab-btn')[0], 'ws-view-preview');
+        }
+    </script>
+</body>
+</html>

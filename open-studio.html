@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Studio - Komunitas Brandors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e' },
+                        accent: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' }
+                    },
+                    boxShadow: { 'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.4)', 'glow': '0 0 15px rgba(14, 165, 233, 0.3)' }
+                }
+            }
+        }
+    </script>
+    <style>
+        html { background-color: #020617; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: transparent; color: #f8fafc; -webkit-font-smoothing: antialiased; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .glass-panel { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s ease; }
+        .glass-card:hover { border-color: rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.05); }
+        .sidebar-item { display: flex; align-items: center; padding: 0.75rem 1rem; color: #94a3b8; border-radius: 0.75rem; margin-bottom: 0.25rem; transition: all 0.2s ease; cursor: pointer; font-weight: 500; font-size: 0.875rem; }
+        .sidebar-item:hover { background-color: rgba(255,255,255,0.05); color: #f8fafc; }
+        .sidebar-item.active { background-color: rgba(14, 165, 233, 0.15); color: #38bdf8; font-weight: 700; box-shadow: inset 3px 0 0 #0ea5e9; }
+        .tab-panel { display: none; animation: fadeIn 0.3s ease; }
+        .tab-panel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .post-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 1.25rem; overflow: hidden; transition: all 0.3s ease; }
+        .post-card:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-2px); box-shadow: 0 8px 32px -8px rgba(0,0,0,0.4); }
+        .upvote-btn { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); cursor: pointer; font-weight: 700; font-size: 13px; color: #94a3b8; transition: all 0.2s; }
+        .upvote-btn:hover { background: rgba(14,165,233,0.1); border-color: rgba(14,165,233,0.3); color: #38bdf8; }
+        .upvote-btn.voted { background: rgba(14,165,233,0.15); border-color: rgba(14,165,233,0.4); color: #38bdf8; }
+        .action-btn { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); cursor: pointer; font-weight: 600; font-size: 13px; color: #94a3b8; transition: all 0.2s; }
+        .action-btn:hover { background: rgba(255,255,255,0.06); color: #cbd5e1; }
+        .badge-mentor { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #0f172a; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+        .badge-top { background: rgba(14,165,233,0.2); color: #38bdf8; border: 1px solid rgba(14,165,233,0.3); font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+        .tag-pill { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #94a3b8; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; cursor: pointer; transition: all 0.2s; }
+        .tag-pill:hover { background: rgba(14,165,233,0.1); color: #38bdf8; border-color: rgba(14,165,233,0.3); }
+        .comment { background: rgba(255,255,255,0.02); border-radius: 0.75rem; padding: 1rem; border: 1px solid rgba(255,255,255,0.05); }
+        .filter-btn { padding: 6px 16px; border-radius: 999px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.08); color: #94a3b8; }
+        .filter-btn:hover { color: white; border-color: rgba(255,255,255,0.2); }
+        .filter-btn.active { background: rgba(14,165,233,0.15); color: #38bdf8; border-color: rgba(14,165,233,0.3); }
+        textarea { background-color: rgba(15, 23, 42, 0.6); color: white; border-color: rgba(255,255,255,0.1); outline: none; resize: none; }
+        textarea:focus { box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.3); border-color: #0ea5e9; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-box { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); border-radius: 1.5rem; width: 100%; max-width: 560px; padding: 2rem; }
+        .drop-zone { border: 2px dashed rgba(255,255,255,0.15); border-radius: 1rem; padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .drop-zone:hover { border-color: rgba(14,165,233,0.4); background: rgba(14,165,233,0.04); }
+        input[type="text"] { background-color: rgba(15, 23, 42, 0.6); color: white; border-color: rgba(255,255,255,0.1); outline: none; }
+        input[type="text"]:focus { box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.3); border-color: #0ea5e9; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden relative">
+
+    <div class="fixed inset-0 z-[-1] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
+
+    <!-- Create Post Modal -->
+    <div id="create-modal" class="modal-overlay hidden" onclick="closeModal(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-extrabold text-white">Buat Post Baru</h2>
+                <button onclick="toggleModal(false)" class="text-slate-400 hover:text-white transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Judul Post</label>
+                    <input type="text" placeholder="Misalnya: Feedback untuk logo warung kopi saya" class="w-full border rounded-xl px-4 py-3 text-sm font-medium" />
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Deskripsi / Pertanyaan</label>
+                    <textarea rows="3" placeholder="Ceritakan tentang brand Anda dan feedback yang ingin Anda dapatkan..." class="w-full border rounded-xl px-4 py-3 text-sm font-medium"></textarea>
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Upload Gambar Desain</label>
+                    <div class="drop-zone">
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-600 mb-3 block"></i>
+                        <div class="font-bold text-slate-400 text-sm">Klik atau seret gambar ke sini</div>
+                        <div class="text-slate-600 text-xs mt-1">PNG, JPG, atau PDF (maks. 10MB)</div>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Tag (Pilih yang sesuai)</label>
+                    <div class="flex flex-wrap gap-2">
+                        <div class="tag-pill" onclick="this.classList.toggle('bg-brand-500/15'); this.classList.toggle('text-brand-400'); this.classList.toggle('border-brand-500/30');">Logo</div>
+                        <div class="tag-pill" onclick="this.classList.toggle('bg-brand-500/15'); this.classList.toggle('text-brand-400'); this.classList.toggle('border-brand-500/30');">Warna</div>
+                        <div class="tag-pill" onclick="this.classList.toggle('bg-brand-500/15'); this.classList.toggle('text-brand-400'); this.classList.toggle('border-brand-500/30');">Typography</div>
+                        <div class="tag-pill" onclick="this.classList.toggle('bg-brand-500/15'); this.classList.toggle('text-brand-400'); this.classList.toggle('border-brand-500/30');">Packaging</div>
+                        <div class="tag-pill" onclick="this.classList.toggle('bg-brand-500/15'); this.classList.toggle('text-brand-400'); this.classList.toggle('border-brand-500/30');">Feedback</div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="toggleModal(false)" class="flex-1 py-3 rounded-xl border border-white/10 text-slate-300 font-bold text-sm hover:bg-white/5 transition">Batal</button>
+                <button onclick="submitPost()" class="flex-1 py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-white font-bold text-sm transition shadow-glow">Publikasikan Post</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Post Detail Modal -->
+    <div id="detail-modal" class="modal-overlay hidden" onclick="closeDetailModal(event)">
+        <div class="modal-box max-w-2xl" style="max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-800 flex items-center justify-center font-bold text-white text-sm">WK</div>
+                    <div>
+                        <div class="font-bold text-white text-sm flex items-center gap-2">Warung Kopi Nusantara <span class="badge-top">Klien Verified</span></div>
+                        <div class="text-[11px] text-slate-400 font-medium">2 hari yang lalu · 45 upvote · 12 komentar</div>
+                    </div>
+                </div>
+                <button onclick="closeDetailModal()" class="text-slate-400 hover:text-white transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <h2 class="text-lg font-extrabold text-white mb-2">Minta Feedback: Logo Warung Kopi Nusantara — Apakah sudah "menyentuh" pelanggan lokal?</h2>
+            <p class="text-slate-400 text-sm leading-relaxed mb-4">Hai semua! Saya baru saja dapat logo dari Brandors untuk warung kopi saya. Saya senang hasilnya, tapi ingin tahu pendapat komunitas. Apakah logo ini sudah cukup mencerminkan nuansa "hangat, lokal, dan autentik" yang saya inginkan? Ada saran perubahan warna atau gaya?</p>
+            <div class="flex flex-wrap gap-2 mb-5">
+                <span class="tag-pill">Logo</span><span class="tag-pill">Feedback</span><span class="tag-pill">Kuliner</span>
+            </div>
+            <!-- Placeholder design image -->
+            <div class="w-full rounded-xl bg-gradient-to-br from-amber-900/30 to-slate-800 h-48 flex items-center justify-center mb-6 border border-white/05">
+                <div class="text-center"><i class="fa-solid fa-mug-hot text-5xl text-amber-500/40 mb-2 block"></i><span class="text-slate-500 text-sm font-medium">Gambar Desain Logo</span></div>
+            </div>
+            <!-- Comments -->
+            <h3 class="font-extrabold text-white mb-3 text-sm">Komentar (12)</h3>
+            <div class="space-y-3 mb-5">
+                <div class="comment">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center font-bold text-xs">RP</div>
+                        <div class="flex items-center gap-2"><span class="font-bold text-white text-sm">Rizky Pratama</span><span class="badge-mentor">⭐ Top Mentor</span></div>
+                        <span class="text-slate-500 text-xs ml-auto font-medium">2 jam lalu</span>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed">Logo ini sudah sangat bagus! Secara komposisi dan keterbacaan sudah baik. Saran saya: coba explore warna cokelat tua (#4A2C17) sebagai warna primer. Itu akan memperkuat kesan "kopi asli" yang hangat. Hindari terlalu banyak gradasi agar tampak lebih timeless.</p>
+                    <div class="flex items-center gap-3 mt-3">
+                        <button class="upvote-btn voted" onclick="toggleUpvote(this)"><i class="fa-solid fa-arrow-up text-xs"></i> 18</button>
+                        <button class="action-btn"><i class="fa-solid fa-reply text-xs"></i> Balas</button>
+                    </div>
+                </div>
+                <div class="comment">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center font-bold text-xs">MS</div>
+                        <span class="font-bold text-white text-sm">Maya Sari</span>
+                        <span class="text-slate-500 text-xs ml-auto font-medium">5 jam lalu</span>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed">Menurut saya fontnya sudah pas — serif klasik itu memberi kesan tradisional yang bagus. Tapi ikon di logonya bisa dibuat lebih ikonik, misalnya silhouette cangkir yang lebih bold agar terlihat jelas di ukuran kecil (favicon, stiker).</p>
+                    <div class="flex items-center gap-3 mt-3">
+                        <button class="upvote-btn" onclick="toggleUpvote(this)"><i class="fa-solid fa-arrow-up text-xs"></i> 7</button>
+                        <button class="action-btn"><i class="fa-solid fa-reply text-xs"></i> Balas</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Add Comment -->
+            <div class="flex gap-3">
+                <div class="w-9 h-9 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30 flex-shrink-0 flex items-center justify-center font-bold text-xs">SR</div>
+                <div class="flex-1">
+                    <textarea rows="2" placeholder="Tulis komentar atau feedback Anda..." class="w-full border rounded-xl px-4 py-3 text-sm font-medium w-full"></textarea>
+                    <button class="mt-2 bg-brand-500 hover:bg-brand-400 text-white px-5 py-2 rounded-xl font-bold text-sm transition">Kirim Komentar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="w-64 glass-panel border-r flex flex-col z-20 shadow-soft">
+        <div class="p-6 border-b border-white/5">
+            <div class="font-extrabold text-xl tracking-tight text-white leading-none">Brand<span class="text-brand-500">ors.</span></div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Open Studio</div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 space-y-1">
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 px-3 mt-2">Feed</div>
+            <div class="sidebar-item active" id="btn-feed" onclick="showTab('feed')"><i class="fa-solid fa-fire-flame-curved w-6 opacity-70"></i> Terpopuler</div>
+            <div class="sidebar-item" id="btn-latest" onclick="showTab('latest')"><i class="fa-solid fa-clock w-6 opacity-70"></i> Terbaru</div>
+            <div class="sidebar-item" id="btn-myposts" onclick="showTab('myposts')"><i class="fa-solid fa-user-pen w-6 opacity-70"></i> Post Saya</div>
+
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 px-3 mt-8">Kategori</div>
+            <div class="sidebar-item" onclick="this.classList.toggle('active')"><i class="fa-solid fa-hashtag w-6 opacity-70 text-xs"></i> Logo & Visual</div>
+            <div class="sidebar-item" onclick="this.classList.toggle('active')"><i class="fa-solid fa-hashtag w-6 opacity-70 text-xs"></i> Warna & Typography</div>
+            <div class="sidebar-item" onclick="this.classList.toggle('active')"><i class="fa-solid fa-hashtag w-6 opacity-70 text-xs"></i> Packaging</div>
+            <div class="sidebar-item" onclick="this.classList.toggle('active')"><i class="fa-solid fa-hashtag w-6 opacity-70 text-xs"></i> Social Media</div>
+            <div class="sidebar-item" onclick="this.classList.toggle('active')"><i class="fa-solid fa-hashtag w-6 opacity-70 text-xs"></i> Feedback & Tanya</div>
+
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 px-3 mt-8">Komunitas</div>
+            <div class="sidebar-item"><i class="fa-solid fa-shield-halved w-6 opacity-70"></i> Aturan Komunitas</div>
+            <div class="sidebar-item"><i class="fa-solid fa-users w-6 opacity-70"></i> Top Mentor Bulan Ini</div>
+        </div>
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center gap-3 p-3 mb-4 glass-card rounded-xl">
+                <div class="w-10 h-10 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold text-sm border border-brand-500/30">SR</div>
+                <div><div class="font-bold text-sm text-white leading-tight">Siti Rahayu</div><div class="text-[10px] text-slate-400 font-medium mt-0.5">Klien · 3 post</div></div>
+            </div>
+            <button onclick="window.location.href='client-dashboard.html'" class="w-full text-left text-sm text-slate-400 font-semibold p-2.5 rounded-lg hover:bg-white/5 hover:text-white transition flex items-center"><i class="fa-solid fa-arrow-left-long mr-2 opacity-70"></i> Kembali ke Dashboard</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto">
+        <div class="max-w-3xl mx-auto p-6 md:p-8">
+
+            <!-- Header Bar -->
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-white">Open Studio 🎨</h1>
+                    <p class="text-slate-400 font-medium text-sm mt-1">Bagikan desain, dapatkan feedback dari komunitas dan desainer.</p>
+                </div>
+                <button onclick="toggleModal(true)" class="bg-brand-500 hover:bg-brand-400 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 shadow-glow flex-shrink-0">
+                    <i class="fa-solid fa-plus"></i> Buat Post
+                </button>
+            </div>
+
+            <!-- ===================== TAB: FEED (POPULAR) ===================== -->
+            <div id="tab-feed" class="tab-panel active">
+
+                <!-- Filter + Sort -->
+                <div class="flex items-center gap-2 mb-6 flex-wrap">
+                    <div class="filter-btn active" onclick="setFilter(this)">🔥 Trending</div>
+                    <div class="filter-btn" onclick="setFilter(this)">⭐ Top Bulan Ini</div>
+                    <div class="filter-btn" onclick="setFilter(this)">💬 Diskusi Aktif</div>
+                    <div class="filter-btn" onclick="setFilter(this)">✅ Solved</div>
+                </div>
+
+                <!-- Community Banner -->
+                <div class="glass-card rounded-2xl p-5 mb-6 flex items-center gap-5 border border-brand-500/10 relative overflow-hidden">
+                    <div class="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-brand-900/30 to-transparent"></div>
+                    <div class="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-brand-700 to-brand-900 flex items-center justify-center text-2xl">🌟</div>
+                    <div class="flex-1 z-10">
+                        <div class="font-extrabold text-white text-base mb-0.5">Selamat datang di Open Studio!</div>
+                        <div class="text-slate-400 text-sm font-medium">Bagikan desain brand Anda, dapatkan skor dari AI, dan feedback dari desainer terkurasi. Komentar helpful Anda bisa berbuah badge <strong class="text-accent-400">Top Mentor</strong>!</div>
+                    </div>
+                </div>
+
+                <!-- Post 1 - with image mock -->
+                <div class="post-card mb-5">
+                    <div class="p-5">
+                        <!-- Author -->
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-800 flex items-center justify-center font-bold text-white text-sm flex-shrink-0">WK</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-bold text-white text-sm flex flex-wrap items-center gap-2">Warung Kopi Nusantara <span class="badge-top">Klien Verified</span></div>
+                                <div class="text-[11px] text-slate-500 font-medium">2 hari yang lalu</div>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 justify-end">
+                                <span class="tag-pill">Logo</span>
+                                <span class="tag-pill">Feedback</span>
+                            </div>
+                        </div>
+                        <!-- Content -->
+                        <h2 class="font-extrabold text-white text-base mb-2 leading-snug cursor-pointer hover:text-brand-300 transition" onclick="openDetail()">Minta Feedback: Logo Warung Kopi Nusantara — Apakah sudah "menyentuh" pelanggan lokal?</h2>
+                        <p class="text-slate-400 text-sm font-medium leading-relaxed mb-4 line-clamp-2">Hai semua! Saya baru saja dapat logo dari Brandors untuk warung kopi saya. Ingin tahu pendapat komunitas apakah logo ini sudah mencerminkan nuansa "hangat, lokal, dan autentik"...</p>
+                        <!-- Design Preview -->
+                        <div class="w-full rounded-xl bg-gradient-to-br from-amber-900/30 to-slate-800 h-40 flex items-center justify-center mb-4 border border-white/05 cursor-pointer hover:border-brand-500/30 transition" onclick="openDetail()">
+                            <div class="text-center"><i class="fa-solid fa-mug-hot text-4xl text-amber-500/40 mb-2 block"></i><span class="text-slate-500 text-xs font-medium">Klik untuk lihat desain</span></div>
+                        </div>
+                    </div>
+                    <!-- Actions -->
+                    <div class="px-5 pb-4 flex items-center gap-3 border-t border-white/05 pt-4">
+                        <button class="upvote-btn" onclick="toggleUpvote(this)"><i class="fa-solid fa-arrow-up text-xs"></i> <span class="vote-count">45</span></button>
+                        <button class="action-btn" onclick="openDetail()"><i class="fa-regular fa-comment text-xs"></i> 12 Komentar</button>
+                        <button class="action-btn ml-auto"><i class="fa-solid fa-share-nodes text-xs"></i> Bagikan</button>
+                        <button class="action-btn"><i class="fa-regular fa-bookmark text-xs"></i> Simpan</button>
+                    </div>
+                </div>
+
+                <!-- Post 2 -->
+                <div class="post-card mb-5">
+                    <div class="p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-rose-700 to-rose-900 flex items-center justify-center font-bold text-white text-sm flex-shrink-0">BS</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-bold text-white text-sm flex flex-wrap items-center gap-2">Batik Soekarno</div>
+                                <div class="text-[11px] text-slate-500 font-medium">4 hari yang lalu</div>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5 justify-end">
+                                <span class="tag-pill">Packaging</span>
+                                <span class="tag-pill">Warna</span>
+                            </div>
+                        </div>
+                        <h2 class="font-extrabold text-white text-base mb-2 leading-snug cursor-pointer hover:text-brand-300 transition">Revamp kemasan batik saya — dari tradisional ke premium modern. Pendapat?</h2>
+                        <p class="text-slate-400 text-sm font-medium leading-relaxed mb-4 line-clamp-2">Kami baru rebranding. Ingin tahu apakah kemasan baru ini sudah berhasil menjaga esensi batik tradisional sekaligus tampil modern untuk pasar ekspor...</p>
+                        <div class="w-full rounded-xl bg-gradient-to-br from-rose-900/30 to-slate-800 h-36 flex items-center justify-center mb-4 border border-white/05 cursor-pointer hover:border-brand-500/30 transition">
+                            <i class="fa-solid fa-box text-4xl text-rose-500/40"></i>
+                        </div>
+                    </div>
+                    <div class="px-5 pb-4 flex items-center gap-3 border-t border-white/05 pt-4">
+                        <button class="upvote-btn" onclick="toggleUpvote(this)"><i class="fa-solid fa-arrow-up text-xs"></i> <span class="vote-count">38</span></button>
+                        <button class="action-btn"><i class="fa-regular fa-comment text-xs"></i> 9 Komentar</button>
+                        <button class="action-btn ml-auto"><i class="fa-solid fa-share-nodes text-xs"></i> Bagikan</button>
+                        <button class="action-btn"><i class="fa-regular fa-bookmark text-xs"></i> Simpan</button>
+                    </div>
+                </div>
+
+                <!-- Post 3 - Text only + AI Score -->
+                <div class="post-card mb-5">
+                    <div class="p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-700 to-brand-900 flex items-center justify-center font-bold text-white text-sm flex-shrink-0">TJ</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-bold text-white text-sm">TeknoJasa Indonesia</div>
+                                <div class="text-[11px] text-slate-500 font-medium">1 minggu yang lalu</div>
+                            </div>
+                            <span class="tag-pill">Logo</span>
+                        </div>
+                        <h2 class="font-extrabold text-white text-base mb-2 leading-snug cursor-pointer hover:text-brand-300 transition">AI Brand Audit saya dapat skor 82/100 — apa yang harus diperbaiki dulu?</h2>
+                        <p class="text-slate-400 text-sm font-medium leading-relaxed mb-4">AI Brandors menilai logo lama saya 82/100 dan bilang ada masalah di "konsistensi warna" dan "keterbacaan di ukuran kecil". Ada desainer yang bisa bantu jelaskan lebih spesifik?</p>
+                        <!-- AI Score badge -->
+                        <div class="bg-brand-900/40 border border-brand-500/20 rounded-xl p-4 flex items-center gap-4">
+                            <div class="text-center flex-shrink-0">
+                                <div class="text-3xl font-extrabold text-white">82</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">/ 100</div>
+                            </div>
+                            <div class="w-px h-10 bg-white/10"></div>
+                            <div>
+                                <div class="text-[10px] font-bold text-brand-400 uppercase tracking-widest mb-1">AI Brand Score</div>
+                                <div class="font-bold text-white text-sm">Perlu Perbaikan: Konsistensi Warna, Keterbacaan</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-5 pb-4 flex items-center gap-3 border-t border-white/05 pt-4">
+                        <button class="upvote-btn voted" onclick="toggleUpvote(this)"><i class="fa-solid fa-arrow-up text-xs"></i> <span class="vote-count">29</span></button>
+                        <button class="action-btn"><i class="fa-regular fa-comment text-xs"></i> 17 Komentar</button>
+                        <button class="action-btn ml-auto"><i class="fa-solid fa-share-nodes text-xs"></i> Bagikan</button>
+                        <button class="action-btn"><i class="fa-regular fa-bookmark text-xs"></i> Simpan</button>
+                    </div>
+                </div>
+
+                <!-- Post 4 - With Top Mentor Comment preview -->
+                <div class="post-card mb-5">
+                    <div class="p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-700 to-amber-900 flex items-center justify-center font-bold text-white text-sm flex-shrink-0">MJ</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-bold text-white text-sm">Madu Jawa Asli</div>
+                                <div class="text-[11px] text-slate-500 font-medium">1 minggu yang lalu</div>
+                            </div>
+                            <div class="flex gap-1.5"><span class="tag-pill">Logo</span><span class="tag-pill">Feedback</span></div>
+                        </div>
+                        <h2 class="font-extrabold text-white text-base mb-2 leading-snug cursor-pointer hover:text-brand-300 transition">Pilih mana: Logo A (Modern Minimalis) vs Logo B (Tradisional Ornamental)?</h2>
+                        <p class="text-slate-400 text-sm font-medium leading-relaxed mb-4">Desainer kami memberikan 2 arah berbeda. Saya bingung memilih. Tolong bantu dengan vote dan alasan Anda!</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-slate-800/50 border border-white/05 rounded-xl h-28 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-brand-500/40 transition">
+                                <i class="fa-solid fa-circle text-3xl text-slate-400 opacity-40"></i>
+                                <span class="text-xs font-bold text-slate-400">Logo A — Modern</span>
+                            </div>
+                            <div class="bg-slate-800/50 border border-white/05 rounded-xl h-28 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-brand-500/40 transition">
+                                <i class="fa-solid fa-star-and-crescent text-3xl text-amber-500 opacity-40"></i>
+                                <span class="text-xs font-bold text-slate-400">Logo B — Tradisional</span>
+                            </div>
+                        </div>
+                        <!-- Top Mentor Comment Preview -->
+                        <div class="mt-4 bg-amber-900/20 border border-amber-500/20 rounded-xl p-3 flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30 flex-shrink-0 flex items-center justify-center font-bold text-xs">RP</div>
+                            <div>
+                                <div class="flex items-center gap-2 mb-1"><span class="font-bold text-white text-xs">Rizky Pratama</span><span class="badge-mentor">⭐ Top Mentor</span></div>
+                                <p class="text-slate-300 text-xs leading-relaxed">Logo B lebih tepat untuk produk madu lokal karena membangun trust melalui visual tradisional...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-5 pb-4 flex items-center gap-3 border-t border-white/05 pt-4">
+                        <button class="upvote-btn" onclick="toggleUpvote(this)"><i class="fa-solid fa-arrow-up text-xs"></i> <span class="vote-count">21</span></button>
+                        <button class="action-btn"><i class="fa-regular fa-comment text-xs"></i> 24 Komentar</button>
+                        <button class="action-btn ml-auto"><i class="fa-solid fa-share-nodes text-xs"></i> Bagikan</button>
+                        <button class="action-btn"><i class="fa-regular fa-bookmark text-xs"></i> Simpan</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ===================== TAB: LATEST ===================== -->
+            <div id="tab-latest" class="tab-panel">
+                <div class="mb-6">
+                    <div class="filter-btn active mb-1 inline-block">Terbaru</div>
+                </div>
+                <!-- New Post Input Shortcut -->
+                <div class="glass-card rounded-2xl p-4 mb-6 flex items-center gap-4 cursor-pointer hover:border-brand-500/30 transition" onclick="toggleModal(true)">
+                    <div class="w-10 h-10 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center font-bold text-sm flex-shrink-0">SR</div>
+                    <div class="flex-1 bg-slate-800/50 border border-white/08 rounded-xl px-4 py-2.5 text-slate-400 text-sm font-medium">Ada desain yang ingin Anda bagikan ke komunitas?</div>
+                    <button class="flex-shrink-0 bg-brand-500 text-white px-4 py-2 rounded-xl font-bold text-xs hover:bg-brand-400 transition">Post</button>
+                </div>
+                <div class="text-center py-16 text-slate-600">
+                    <i class="fa-solid fa-clock text-4xl mb-4 block opacity-30"></i>
+                    <div class="font-bold text-lg mb-2">Tidak ada post baru</div>
+                    <div class="text-sm font-medium">Jadilah yang pertama posting hari ini!</div>
+                </div>
+            </div>
+
+            <!-- ===================== TAB: MY POSTS ===================== -->
+            <div id="tab-myposts" class="tab-panel">
+                <div class="mb-6 flex items-center justify-between">
+                    <h2 class="font-extrabold text-white text-xl">Post Saya (1)</h2>
+                    <button onclick="toggleModal(true)" class="text-sm font-bold text-brand-400 hover:text-brand-300 transition flex items-center gap-2"><i class="fa-solid fa-plus"></i> Post Baru</button>
+                </div>
+                <!-- My Post -->
+                <div class="post-card mb-5 border-brand-500/15">
+                    <div class="p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30 flex-shrink-0 flex items-center justify-center font-bold text-sm">SR</div>
+                            <div class="flex-1">
+                                <div class="font-bold text-white text-sm">Siti Rahayu <span class="text-brand-400 text-[10px] font-bold">(Kamu)</span></div>
+                                <div class="text-[11px] text-slate-500 font-medium">3 hari yang lalu</div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="action-btn text-xs"><i class="fa-solid fa-pen text-xs"></i> Edit</button>
+                                <button class="action-btn text-xs text-rose-400 hover:border-rose-500/30"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </div>
+                        <h2 class="font-extrabold text-white text-base mb-2">Perlu feedback: Warna logo catering saya terlalu ramai?</h2>
+                        <p class="text-slate-400 text-sm font-medium leading-relaxed mb-4">Ini adalah versi pertama logo dari Brandors untuk bisnis catering saya "Siti Catering". Kata suami saya warnanya terlalu ramai. Ada yang bisa bantu?</p>
+                        <div class="grid grid-cols-3 gap-3 text-center">
+                            <div class="bg-slate-800/50 rounded-xl p-3"><div class="text-xl font-extrabold text-white">15</div><div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1">Upvotes</div></div>
+                            <div class="bg-slate-800/50 rounded-xl p-3"><div class="text-xl font-extrabold text-white">8</div><div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1">Komentar</div></div>
+                            <div class="bg-slate-800/50 rounded-xl p-3"><div class="text-xl font-extrabold text-white">42</div><div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1">Dilihat</div></div>
+                        </div>
+                    </div>
+                    <div class="px-5 pb-4 flex items-center gap-3 border-t border-white/05 pt-4">
+                        <button class="upvote-btn voted"><i class="fa-solid fa-arrow-up text-xs"></i> 15</button>
+                        <button class="action-btn" onclick="openDetail()"><i class="fa-regular fa-comment text-xs"></i> Lihat Komentar</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Right Sidebar: Top Mentors -->
+    <aside class="hidden lg:flex w-72 glass-panel border-l flex-col z-20 p-6 overflow-y-auto">
+        <h3 class="font-extrabold text-white text-sm mb-5 flex items-center gap-2"><i class="fa-solid fa-trophy text-accent-400"></i> Top Mentor Bulan Ini</h3>
+        <div class="space-y-4 mb-8">
+            <div class="flex items-center gap-3">
+                <div class="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center font-bold text-xs text-white">RP</div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-bold text-white text-sm flex items-center gap-1.5">Rizky Pratama <span class="badge-mentor">⭐</span></div>
+                    <div class="text-[11px] text-slate-400 font-medium">142 komentar helpful</div>
+                </div>
+                <span class="text-[10px] font-bold text-slate-500">#1</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center font-bold text-xs text-white">MS</div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-bold text-white text-sm">Maya Sari</div>
+                    <div class="text-[11px] text-slate-400 font-medium">98 komentar helpful</div>
+                </div>
+                <span class="text-[10px] font-bold text-slate-500">#2</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-800 flex items-center justify-center font-bold text-xs text-white">AW</div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-bold text-white text-sm">Andri Wahyu</div>
+                    <div class="text-[11px] text-slate-400 font-medium">76 komentar helpful</div>
+                </div>
+                <span class="text-[10px] font-bold text-slate-500">#3</span>
+            </div>
+        </div>
+
+        <h3 class="font-extrabold text-white text-sm mb-4 flex items-center gap-2"><i class="fa-solid fa-tags text-brand-400"></i> Tag Populer</h3>
+        <div class="flex flex-wrap gap-2 mb-8">
+            <span class="tag-pill">#Logo</span>
+            <span class="tag-pill">#Feedback</span>
+            <span class="tag-pill">#Warna</span>
+            <span class="tag-pill">#Packaging</span>
+            <span class="tag-pill">#UMKM</span>
+            <span class="tag-pill">#Typography</span>
+            <span class="tag-pill">#SocialMedia</span>
+        </div>
+
+        <h3 class="font-extrabold text-white text-sm mb-4 flex items-center gap-2"><i class="fa-solid fa-shield-halved text-brand-400"></i> Panduan Komunitas</h3>
+        <div class="space-y-2 text-xs text-slate-400 font-medium">
+            <div class="flex items-start gap-2"><i class="fa-solid fa-check text-brand-400 mt-0.5 flex-shrink-0"></i> Berikan feedback yang konstruktif dan sopan</div>
+            <div class="flex items-start gap-2"><i class="fa-solid fa-check text-brand-400 mt-0.5 flex-shrink-0"></i> Hanya bagikan desain milik sendiri</div>
+            <div class="flex items-start gap-2"><i class="fa-solid fa-check text-brand-400 mt-0.5 flex-shrink-0"></i> Jangan spam atau promosi diri berlebihan</div>
+            <div class="flex items-start gap-2"><i class="fa-solid fa-check text-brand-400 mt-0.5 flex-shrink-0"></i> Hargai karya orang lain</div>
+        </div>
+    </aside>
+
+    <script>
+        function showTab(name) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            const panel = document.getElementById('tab-' + name);
+            if (panel) panel.classList.add('active');
+            const btn = document.getElementById('btn-' + name);
+            if (btn) btn.classList.add('active');
+        }
+        function setFilter(el) {
+            el.closest('.flex').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+        function toggleUpvote(btn) {
+            const voted = btn.classList.toggle('voted');
+            const countEl = btn.querySelector('.vote-count');
+            if (countEl) {
+                let count = parseInt(countEl.textContent);
+                countEl.textContent = voted ? count + 1 : count - 1;
+            }
+        }
+        function toggleModal(show) {
+            const m = document.getElementById('create-modal');
+            m.classList.toggle('hidden', !show);
+        }
+        function closeModal(e) {
+            if (e.target.id === 'create-modal') toggleModal(false);
+        }
+        function openDetail() {
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+        function closeDetailModal(e) {
+            if (!e || e.target.id === 'detail-modal') {
+                document.getElementById('detail-modal').classList.add('hidden');
+            }
+        }
+        function submitPost() {
+            toggleModal(false);
+            alert('Post berhasil dipublikasikan! 🎉');
+        }
+    </script>
+</body>
+</html>

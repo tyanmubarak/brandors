@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Desainer - Brandors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 800: '#075985', 900: '#0c4a6e' },
+                        accent: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' }
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.3)',
+                        'glow': '0 0 20px rgba(14, 165, 233, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html { background-color: #020617; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: transparent; color: #f8fafc; -webkit-font-smoothing: antialiased; }
+        
+        .tab-panel { display: none; animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .tab-panel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .glass-panel { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s ease; }
+        .glass-card:hover { border-color: rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.05); }
+
+        .ds-sidebar-item { display: flex; align-items: center; padding: 0.75rem 1rem; color: #94a3b8; border-radius: 0.75rem; margin-bottom: 0.25rem; transition: all 0.2s ease; cursor: pointer; font-weight: 500; }
+        .ds-sidebar-item:hover { background-color: rgba(255,255,255,0.05); color: #f8fafc; }
+        .ds-sidebar-item.active { background-color: rgba(14, 165, 233, 0.15); color: #38bdf8; font-weight: 700; box-shadow: inset 3px 0 0 #38bdf8; }
+        
+        input, select, textarea { background-color: rgba(15, 23, 42, 0.6); color: white; border-color: rgba(255,255,255,0.1); outline: none; }
+        input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.3); border-color: #0ea5e9; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden relative">
+
+    <!-- GLOBAL BACKGROUND -->
+    <div class="fixed inset-0 z-[-1] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
+
+    <!-- Sidebar Dark -->
+    <aside class="w-64 glass-panel border-r flex flex-col z-20">
+        <div class="p-6 border-b border-white/5 flex items-center gap-2">
+            <div>
+                <div class="font-extrabold text-xl tracking-tight text-white leading-none">Brand<span class="text-brand-500">ors.</span></div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Portal Desainer</div>
+            </div>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-4 space-y-1 text-sm font-medium">
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 px-3 mt-2">Pekerjaan</div>
+            <div class="ds-sidebar-item active" id="btn-dc-overview" onclick="showTab('overview')"><i class="fa-solid fa-chart-line w-6 opacity-70"></i> Performa</div>
+            <div class="ds-sidebar-item" id="btn-dc-bursa" onclick="showTab('bursa')"><i class="fa-solid fa-store w-6 opacity-70"></i> Bursa Brief <span class="ml-auto bg-brand-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">5</span></div>
+            <div class="ds-sidebar-item" id="btn-dc-active" onclick="showTab('active')"><i class="fa-solid fa-layer-group w-6 opacity-70"></i> Proyek Aktif <span class="ml-auto bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">2</span></div>
+            
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 px-3 mt-8">Keuangan & Profil</div>
+            <div class="ds-sidebar-item" id="btn-dc-earnings" onclick="showTab('earnings')"><i class="fa-solid fa-wallet w-6 opacity-70"></i> Penghasilan</div>
+            <div class="ds-sidebar-item" id="btn-dc-profile" onclick="showTab('profile')"><i class="fa-solid fa-user w-6 opacity-70"></i> Profil Saya</div>
+
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 px-3 mt-8">Komunitas</div>
+            <div class="ds-sidebar-item" onclick="window.location.href='open-studio.html'"><i class="fa-solid fa-comments w-6 opacity-70"></i> Open Studio <span class="ml-auto text-[9px] font-bold bg-accent-500/20 text-accent-400 border border-accent-500/20 px-2 py-0.5 rounded-full">Mentor</span></div>
+        </div>
+        
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center gap-3 p-3 mb-4 glass-card rounded-xl">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center font-bold text-sm shadow-inner">RP</div>
+                <div><div class="font-bold text-sm text-white leading-tight">Rizky Pratama</div><div class="text-[10px] text-accent-400 font-medium mt-0.5 tracking-wider uppercase"><i class="fa-solid fa-star text-[9px]"></i> 4.9 Top Pro</div></div>
+            </div>
+            <button onclick="window.location.href='landing-page.html'" class="w-full text-left text-sm text-slate-400 font-semibold p-2.5 rounded-lg mb-2 hover:bg-white/5 hover:text-white transition flex items-center"><i class="fa-solid fa-arrow-left-long mr-2 opacity-70"></i> Keluar ke Web</button>
+            <button onclick="window.location.href='client-dashboard.html'" class="w-full text-left text-sm text-brand-400 font-bold p-2.5 bg-brand-900/20 border border-brand-500/20 rounded-lg hover:bg-brand-900/40 transition flex items-center"><i class="fa-solid fa-rotate mr-2"></i> Demo Klien</button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 p-6 md:p-10 overflow-y-auto relative scroll-smooth">
+        <div class="max-w-6xl mx-auto">
+            
+            <!-- OVERVIEW -->
+            <div id="dc-overview" class="tab-panel active">
+                <div class="mb-8 border-b border-white/5 pb-6">
+                    <h1 class="text-3xl font-extrabold text-white mb-1">Halo, Rizky! 🎨</h1>
+                    <p class="text-slate-400 font-medium">Bulan ini performa Anda sangat luar biasa.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                    <div class="glass-card p-6 rounded-2xl"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Proyek Aktif</p><h3 class="text-3xl font-extrabold text-white mb-2">2</h3><span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded-md">Deadline: 3 hari</span></div>
+                    <div class="glass-card p-6 rounded-2xl"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Penghasilan Bulan Ini</p><h3 class="text-3xl font-extrabold text-white mb-2">Rp8.4jt</h3><span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-md">▲ 22% vs bulan lalu</span></div>
+                    <div class="glass-card p-6 rounded-2xl"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Rating Rata-rata</p><h3 class="text-3xl font-extrabold text-white mb-2">4.9 ★</h3><span class="text-[10px] font-medium text-slate-500">Dari 87 ulasan</span></div>
+                    <div class="glass-card p-6 rounded-2xl"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Completion Rate</p><h3 class="text-3xl font-extrabold text-white mb-2">98%</h3><span class="text-[10px] font-bold text-brand-400 bg-brand-500/10 border border-brand-500/20 px-2 py-1 rounded-md">Top Tier</span></div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Needs Action -->
+                    <div class="glass-card rounded-2xl p-6">
+                        <h3 class="font-extrabold text-white mb-6 border-b border-white/5 pb-3 flex items-center"><i class="fa-solid fa-bell text-amber-500 mr-2"></i> Perlu Tindakan Anda</h3>
+                        <div class="flex justify-between items-center bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 mb-3 hover:bg-slate-800 cursor-pointer transition">
+                            <div><p class="font-bold text-sm text-white">Warung Makan Sri</p><p class="text-[11px] font-medium text-slate-400 mt-0.5">Menunggu balasan chat</p></div>
+                            <span class="bg-brand-500/10 text-brand-400 border border-brand-500/20 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">Review Klien</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 hover:bg-slate-800 cursor-pointer transition">
+                            <div><p class="font-bold text-sm text-white">TeknoJasa</p><p class="text-[11px] font-bold text-amber-400 mt-0.5">Deadline dalam 24 jam</p></div>
+                            <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">Upload Draft</span>
+                        </div>
+                    </div>
+                    <!-- Alert New Brief -->
+                    <div class="bg-gradient-to-br from-brand-900/80 to-slate-900/80 border border-brand-500/30 rounded-2xl p-8 shadow-lg text-center flex flex-col justify-center items-center relative overflow-hidden backdrop-blur-sm">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-brand-500 rounded-full blur-[60px] opacity-20"></div>
+                        <h3 class="font-extrabold text-white mb-2 text-2xl relative z-10"><i class="fa-solid fa-envelope-open-text mr-2 text-brand-400"></i> 5 Brief Baru!</h3>
+                        <p class="text-sm text-brand-200/80 mb-6 font-medium relative z-10 max-w-sm">Pekerjaan baru yang sesuai dengan spesialisasi Anda (F&B, Retail) baru saja masuk ke sistem.</p>
+                        <button onclick="showTab('bursa')" class="bg-white text-slate-900 hover:bg-slate-100 px-8 py-3.5 rounded-xl font-bold text-sm transition shadow-[0_0_20px_rgba(255,255,255,0.2)] relative z-10 hover:-translate-y-0.5">Lihat Bursa Brief</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BURSA BRIEF -->
+            <div id="dc-bursa" class="tab-panel">
+                <div class="mb-8 border-b border-white/5 pb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-white mb-2">Bursa Brief</h1>
+                        <p class="text-slate-400 font-medium">Pilih proyek yang sesuai keahlian Anda. Sistem *first come, first serve*.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <select class="bg-slate-800 border border-slate-700 text-sm font-bold text-white rounded-lg px-4 py-2 outline-none focus:border-brand-500 cursor-pointer">
+                            <option>Semua Industri</option>
+                            <option>F&B</option>
+                            <option>Fashion</option>
+                            <option>Retail</option>
+                        </select>
+                        <select class="bg-slate-800 border border-slate-700 text-sm font-bold text-white rounded-lg px-4 py-2 outline-none focus:border-brand-500 cursor-pointer">
+                            <option>Yang Terbaru</option>
+                            <option>Deadline Terdekat</option>
+                            <option>Harga Tertinggi</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <!-- Job 1 -->
+                    <div class="glass-card rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start md:items-center hover:border-brand-500/50 transition-all duration-300">
+                        <div class="w-16 h-16 bg-amber-500/10 text-amber-400 border border-amber-500/20 text-2xl rounded-2xl flex items-center justify-center shrink-0">☕</div>
+                        <div class="flex-1">
+                            <h3 class="font-extrabold text-lg text-white mb-1">Kopi Nusantara — Brand Identity</h3>
+                            <p class="text-sm text-slate-400 font-medium mb-3">Kedai kopi lokal, target milenial. Moodboard <strong class="text-white">"Hangat & Natural"</strong> telah dipilih. Klien siap diproses.</p>
+                            <div class="flex flex-wrap gap-2"><span class="bg-slate-800 text-slate-300 px-2.5 py-1 rounded text-[10px] tracking-wider uppercase font-bold border border-slate-700">F&B</span><span class="bg-slate-800 text-slate-300 px-2.5 py-1 rounded text-[10px] tracking-wider uppercase font-bold border border-slate-700">Paket Starter</span></div>
+                        </div>
+                        <div class="text-left md:text-right w-full md:w-auto mt-4 md:mt-0 border-t md:border-t-0 md:border-l border-white/5 pt-4 md:pt-0 md:pl-6 shrink-0 flex flex-row md:flex-col items-center md:items-end justify-between">
+                            <div>
+                                <div class="text-2xl font-extrabold text-brand-400 mb-1">Rp 450.000</div>
+                                <div class="text-xs font-medium text-slate-500 mb-0 md:mb-4"><i class="fa-regular fa-clock"></i> Deadline: 5 hari</div>
+                            </div>
+                            <button onclick="takeJob()" class="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition shadow-[0_0_15px_rgba(14,165,233,0.3)] hover:-translate-y-0.5">Ambil Proyek</button>
+                        </div>
+                    </div>
+                    <!-- Job 2 -->
+                    <div class="glass-card rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start md:items-center hover:border-brand-500/50 transition-all duration-300">
+                        <div class="w-16 h-16 bg-purple-500/10 text-purple-400 border border-purple-500/20 text-2xl rounded-2xl flex items-center justify-center shrink-0">👗</div>
+                        <div class="flex-1">
+                            <h3 class="font-extrabold text-lg text-white mb-1">Lena Stylist — Identitas Lengkap</h3>
+                            <p class="text-sm text-slate-400 font-medium mb-3">Butik busana muslim premium. Moodboard <strong class="text-white">"Elegan & Bold"</strong> telah dipilih. Butuh estetika mewah.</p>
+                            <div class="flex flex-wrap gap-2"><span class="bg-slate-800 text-slate-300 px-2.5 py-1 rounded text-[10px] tracking-wider uppercase font-bold border border-slate-700">Fashion</span><span class="bg-slate-800 text-slate-300 px-2.5 py-1 rounded text-[10px] tracking-wider uppercase font-bold border border-slate-700">Paket Profesional</span></div>
+                        </div>
+                        <div class="text-left md:text-right w-full md:w-auto mt-4 md:mt-0 border-t md:border-t-0 md:border-l border-white/5 pt-4 md:pt-0 md:pl-6 shrink-0 flex flex-row md:flex-col items-center md:items-end justify-between">
+                            <div>
+                                <div class="text-2xl font-extrabold text-brand-400 mb-1">Rp 1.250.000</div>
+                                <div class="text-xs font-medium text-slate-500 mb-0 md:mb-4"><i class="fa-regular fa-clock"></i> Deadline: 7 hari</div>
+                            </div>
+                            <button onclick="takeJob()" class="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition shadow-[0_0_15px_rgba(14,165,233,0.3)] hover:-translate-y-0.5">Ambil Proyek</button>
+                        </div>
+                    </div>
+                    <!-- Job 3 -->
+                    <div class="glass-card rounded-2xl p-6 flex flex-col md:flex-row gap-6 items-start md:items-center hover:border-brand-500/50 transition-all duration-300">
+                        <div class="w-16 h-16 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-2xl rounded-2xl flex items-center justify-center shrink-0">🥬</div>
+                        <div class="flex-1">
+                            <h3 class="font-extrabold text-lg text-white mb-1">Hijau Organik — Logo & Packaging</h3>
+                            <p class="text-sm text-slate-400 font-medium mb-3">Toko sayur hidroponik. Kebutuhan desain ekstensif mencakup kotak kemasan dan *tote bag*.</p>
+                            <div class="flex flex-wrap gap-2"><span class="bg-slate-800 text-slate-300 px-2.5 py-1 rounded text-[10px] tracking-wider uppercase font-bold border border-slate-700">Retail</span><span class="bg-slate-800 text-slate-300 px-2.5 py-1 rounded text-[10px] tracking-wider uppercase font-bold border border-slate-700">Paket Komplit</span></div>
+                        </div>
+                        <div class="text-left md:text-right w-full md:w-auto mt-4 md:mt-0 border-t md:border-t-0 md:border-l border-white/5 pt-4 md:pt-0 md:pl-6 shrink-0 flex flex-row md:flex-col items-center md:items-end justify-between">
+                            <div>
+                                <div class="text-2xl font-extrabold text-brand-400 mb-1">Rp 2.500.000</div>
+                                <div class="text-xs font-medium text-slate-500 mb-0 md:mb-4"><i class="fa-regular fa-clock"></i> Deadline: 14 hari</div>
+                            </div>
+                            <button onclick="takeJob()" class="bg-brand-600 hover:bg-brand-500 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition shadow-[0_0_15px_rgba(14,165,233,0.3)] hover:-translate-y-0.5">Ambil Proyek</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTIVE PROJECTS -->
+            <div id="dc-active" class="tab-panel">
+                <div class="mb-8 border-b border-white/5 pb-6">
+                    <h1 class="text-3xl font-extrabold text-white mb-2">Proyek Aktif</h1>
+                    <p class="text-slate-400 font-medium">Kelola dan upload progress pekerjaan Anda.</p>
+                </div>
+                <div class="grid grid-cols-1 gap-6">
+                    <!-- Card Workspace Panel -->
+                    <div class="glass-card rounded-2xl p-6 md:p-8">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-white/5 pb-6 gap-4">
+                            <div><h3 class="text-2xl font-extrabold text-white">Warung Makan Sri</h3><p class="text-sm font-medium text-slate-400 mt-1">Klien: Siti Rahayu · Paket Profesional</p></div>
+                            <span class="bg-brand-500/10 border border-brand-500/20 text-brand-400 text-[10px] tracking-wider uppercase font-bold px-4 py-2 rounded-full">Menunggu Review Klien</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-8">
+                            <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5"><p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Sisa Waktu</p><p class="font-extrabold text-white text-lg">3 Hari <span class="text-sm font-medium text-slate-500 ml-1">(12 Apr)</span></p></div>
+                            <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5"><p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Sisa Revisi</p><p class="font-extrabold text-white text-lg">2 <span class="text-sm font-medium text-slate-500 ml-1">dari 3</span></p></div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button class="flex-1 bg-white hover:bg-slate-200 border border-transparent text-slate-900 font-bold py-3.5 rounded-xl transition-all shadow-sm"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Upload Draft Baru</button>
+                            <button class="flex-1 bg-brand-900/30 border border-brand-500/30 text-brand-400 hover:bg-brand-900/50 font-bold py-3.5 rounded-xl transition-all shadow-sm"><i class="fa-solid fa-comment-dots mr-2"></i> Chat Klien <span class="bg-brand-500 text-white text-[10px] px-1.5 py-0.5 rounded ml-1">1</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EARNINGS -->
+            <div id="dc-earnings" class="tab-panel">
+                <div class="mb-8 border-b border-white/5 pb-6">
+                    <h1 class="text-3xl font-extrabold text-white mb-2">Penghasilan & Penarikan</h1>
+                    <p class="text-slate-400 font-medium">Kelola saldo dan riwayat transaksi Anda.</p>
+                </div>
+                <div class="bg-gradient-to-br from-brand-900/60 to-slate-900/40 border border-brand-500/20 rounded-3xl p-8 md:p-10 text-white shadow-[0_0_40px_rgba(14,165,233,0.15)] mb-10 flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden backdrop-blur-md">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-brand-500/20 rounded-full blur-[80px]"></div>
+                    <div class="relative z-10 text-center md:text-left">
+                        <p class="text-brand-300 font-bold text-[10px] tracking-widest uppercase mb-2">Saldo Tersedia</p>
+                        <h2 class="text-5xl font-extrabold tracking-tight text-white">Rp2.450.000</h2>
+                    </div>
+                    <button class="relative z-10 bg-white text-slate-900 hover:bg-slate-100 px-8 py-4 rounded-xl font-bold transition shadow-lg w-full md:w-auto hover:-translate-y-1">Tarik Dana ke Bank</button>
+                </div>
+                <div class="glass-card rounded-2xl overflow-hidden border-none">
+                    <div class="p-6 border-b border-white/5 bg-slate-800/30"><h3 class="font-extrabold text-white text-lg">Riwayat Transaksi Terakhir</h3></div>
+                    <div class="p-6 space-y-2 bg-slate-900/20">
+                        <div class="flex justify-between items-center p-4 border border-slate-700/50 rounded-xl hover:bg-slate-800/50 transition"><div class="flex items-center gap-4"><div class="w-10 h-10 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center text-emerald-400"><i class="fa-solid fa-arrow-down"></i></div><div><p class="font-bold text-white text-sm">Pembayaran Warung Sri</p><p class="text-xs font-medium text-slate-400 mt-0.5">Selesai proyek</p></div></div><span class="font-bold text-emerald-400">+Rp 1.250.000</span></div>
+                        <div class="flex justify-between items-center p-4 border border-slate-700/50 rounded-xl hover:bg-slate-800/50 transition"><div class="flex items-center gap-4"><div class="w-10 h-10 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center text-emerald-400"><i class="fa-solid fa-arrow-down"></i></div><div><p class="font-bold text-white text-sm">Pembayaran Hijau Organik</p><p class="text-xs font-medium text-slate-400 mt-0.5">Selesai proyek</p></div></div><span class="font-bold text-emerald-400">+Rp 2.500.000</span></div>
+                        <div class="flex justify-between items-center p-4 border border-slate-700/50 rounded-xl hover:bg-slate-800/50 transition"><div class="flex items-center gap-4"><div class="w-10 h-10 bg-rose-500/10 border border-rose-500/20 rounded-full flex items-center justify-center text-rose-400"><i class="fa-solid fa-arrow-up"></i></div><div><p class="font-bold text-white text-sm">Penarikan Dana</p><p class="text-xs font-medium text-slate-400 mt-0.5">Ke BCA ****1234</p></div></div><span class="font-bold text-rose-400">-Rp 1.300.000</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROFILE -->
+            <div id="dc-profile" class="tab-panel">
+                <div class="mb-8 border-b border-white/5 pb-6">
+                    <h1 class="text-3xl font-extrabold text-white mb-2">Profil Saya</h1>
+                    <p class="text-slate-400 font-medium">Tampilkan keahlian terbaik Anda kepada klien potensial.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="md:col-span-2 glass-card rounded-2xl p-8">
+                        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8 pb-8 border-b border-white/5 text-center sm:text-left">
+                            <div class="w-24 h-24 bg-gradient-to-br from-brand-500 to-brand-700 text-white rounded-full flex items-center justify-center font-bold text-3xl shadow-lg shrink-0">RP</div>
+                            <div>
+                                <h2 class="text-2xl font-extrabold text-white mb-1">Rizky Pratama</h2>
+                                <p class="text-slate-400 font-medium text-sm mb-3">Desainer Brand Identity · Bandung</p>
+                                <p class="text-xs font-extrabold text-accent-400 bg-accent-500/10 border border-accent-500/20 px-3 py-1 rounded-full inline-block"><i class="fa-solid fa-star"></i> 4.9 <span class="text-slate-300 ml-1 font-medium">· 87 Proyek</span></p>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <div><label class="block text-sm font-bold text-slate-300 mb-2">Bio Singkat</label><textarea rows="3" class="w-full rounded-xl p-4 text-sm font-medium resize-none">Spesialis brand identity untuk UMKM F&B dan Retail. Percaya bahwa setiap bisnis kecil berhak punya wajah yang profesional.</textarea></div>
+                            <div><label class="block text-sm font-bold text-slate-300 mb-3">Tag Spesialisasi</label>
+                                <div class="flex gap-2 flex-wrap">
+                                    <span class="bg-brand-600/20 border border-brand-500/30 text-brand-300 px-4 py-1.5 rounded-full text-xs font-bold">F&B</span><span class="bg-brand-600/20 border border-brand-500/30 text-brand-300 px-4 py-1.5 rounded-full text-xs font-bold">Retail</span><span class="bg-brand-600/20 border border-brand-500/30 text-brand-300 px-4 py-1.5 rounded-full text-xs font-bold">Minimalis</span><span class="bg-slate-800 border border-slate-700 text-slate-400 px-4 py-1.5 rounded-full text-xs font-bold cursor-pointer hover:bg-slate-700 transition">Fashion</span><span class="bg-slate-800 border border-slate-700 text-slate-400 px-4 py-1.5 rounded-full text-xs font-bold cursor-pointer hover:bg-slate-700 transition">+ Tambah</span>
+                                </div>
+                            </div>
+                            <div class="pt-4"><button class="bg-brand-600 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-[0_0_15px_rgba(14,165,233,0.3)] hover:bg-brand-500 hover:-translate-y-0.5 transition-all">Simpan Profil</button></div>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="glass-card rounded-2xl p-6">
+                            <h4 class="font-extrabold text-white mb-4 border-b border-white/5 pb-3">🏆 Badge Prestasi</h4>
+                            <div class="space-y-4 text-sm font-bold text-slate-300">
+                                <div class="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50"><span class="text-2xl drop-shadow-sm">🥇</span> Top Desainer Bulan Ini</div>
+                                <div class="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50"><span class="text-2xl drop-shadow-sm">⚡</span> Fast Responder</div>
+                                <div class="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50"><span class="text-2xl drop-shadow-sm">💎</span> 100% Completion Rate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        function showTab(tabId) {
+            document.querySelectorAll(`.tab-panel`).forEach(el => el.classList.remove('active'));
+            document.querySelectorAll(`.ds-sidebar-item`).forEach(el => el.classList.remove('active'));
+            
+            const tabElem = document.getElementById('dc-' + tabId);
+            if(tabElem) tabElem.classList.add('active');
+            
+            const btnElem = document.getElementById('btn-dc-' + tabId);
+            if(btnElem) btnElem.classList.add('active');
+        }
+
+        function takeJob() {
+            alert("Proyek berhasil diambil! Dana telah dikunci di sistem Escrow untuk Anda. Memindahkan ke Proyek Aktif.");
+            showTab('active');
+        }
+    </script>
+</body>
+</html>
